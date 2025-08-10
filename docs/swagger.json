@@ -253,7 +253,7 @@
                 }
             },
             "delete": {
-                "description": "Delete a user by id",
+                "description": "Delete a post by id",
                 "consumes": [
                     "application/json"
                 ],
@@ -263,7 +263,7 @@
                 "tags": [
                     "Posts"
                 ],
-                "summary": "Delete a user",
+                "summary": "Delete a post",
                 "parameters": [
                     {
                         "type": "string",
@@ -275,7 +275,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "User deleted",
+                        "description": "Post deleted",
                         "schema": {
                             "$ref": "#/definitions/httphandler.response"
                         }
@@ -314,6 +314,58 @@
             }
         },
         "/users": {
+            "get": {
+                "description": "Get a paginated list of users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "List users with pagination",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "example": 0,
+                        "description": "Number of items to skip",
+                        "name": "skip",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "example": 5,
+                        "description": "Number of items to take",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Users displayed",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.meta"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Create a new user",
                 "consumes": [
@@ -364,6 +416,185 @@
                     },
                     "409": {
                         "description": "Data conflict error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "get": {
+                "description": "Get a single user by its UUID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get a user by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User found",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.userResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Data not found error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an existing user by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update an user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.updateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User updated",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.userResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Data not found error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete an user by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Delete a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Post ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User deleted",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.response"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Data not found error",
                         "schema": {
                             "$ref": "#/definitions/httphandler.errorResponse"
                         }
@@ -501,6 +732,25 @@
                 },
                 "title": {
                     "type": "string"
+                }
+            }
+        },
+        "httphandler.updateUserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 8
                 }
             }
         },

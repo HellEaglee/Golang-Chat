@@ -27,3 +27,24 @@ func (s *UserService) CreateUser(ctx context.Context, user *domain.User) (*domai
 	user.Password = hashedPassword
 	return s.repo.CreateUser(ctx, user)
 }
+
+func (s *UserService) GetUser(ctx context.Context, id string) (*domain.User, error) {
+	return s.repo.GetUserByID(ctx, id)
+}
+
+func (s *UserService) GetUsers(ctx context.Context, skip uint64, limit uint64) ([]domain.User, error) {
+	return s.repo.GetUsers(ctx, skip, limit)
+}
+
+func (s *UserService) UpdateUser(ctx context.Context, user *domain.User) (*domain.User, error) {
+	hashedPassword, err := util.HashPassword(user.Password)
+	if err != nil {
+		return nil, util.ErrInternal
+	}
+	user.Password = hashedPassword
+	return s.repo.UpdateUser(ctx, user)
+}
+
+func (s *UserService) DeleteUser(ctx context.Context, id string) error {
+	return s.repo.DeleteUser(ctx, id)
+}

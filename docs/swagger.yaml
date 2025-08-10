@@ -88,6 +88,19 @@ definitions:
     - description
     - title
     type: object
+  httphandler.updateUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - email
+    - name
+    type: object
   httphandler.userResponse:
     properties:
       created_at:
@@ -202,7 +215,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Delete a user by id
+      description: Delete a post by id
       parameters:
       - description: Post ID (UUID)
         in: path
@@ -213,7 +226,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: User deleted
+          description: Post deleted
           schema:
             $ref: '#/definitions/httphandler.response'
         "400":
@@ -236,7 +249,7 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/httphandler.errorResponse'
-      summary: Delete a user
+      summary: Delete a post
       tags:
       - Posts
     get:
@@ -318,6 +331,42 @@ paths:
       tags:
       - Posts
   /users:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of users
+      parameters:
+      - description: Number of items to skip
+        example: 0
+        in: query
+        name: skip
+        required: true
+        type: integer
+      - description: Number of items to take
+        example: 5
+        in: query
+        minimum: 1
+        name: limit
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Users displayed
+          schema:
+            $ref: '#/definitions/httphandler.meta'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+      summary: List users with pagination
+      tags:
+      - Users
     post:
       consumes:
       - application/json
@@ -357,6 +406,125 @@ paths:
           schema:
             $ref: '#/definitions/httphandler.errorResponse'
       summary: Create a new user
+      tags:
+      - Users
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an user by id
+      parameters:
+      - description: Post ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User deleted
+          schema:
+            $ref: '#/definitions/httphandler.response'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "401":
+          description: Unauthorized error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "403":
+          description: Forbidden error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "404":
+          description: Data not found error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+      summary: Delete a user
+      tags:
+      - Users
+    get:
+      consumes:
+      - application/json
+      description: Get a single user by its UUID
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User found
+          schema:
+            $ref: '#/definitions/httphandler.userResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "404":
+          description: Data not found error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+      summary: Get a user by ID
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Update an existing user by ID
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/httphandler.updateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User updated
+          schema:
+            $ref: '#/definitions/httphandler.userResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "401":
+          description: Unauthorized error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "403":
+          description: Forbidden error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "404":
+          description: Data not found error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+      summary: Update an user
       tags:
       - Users
 swagger: "2.0"

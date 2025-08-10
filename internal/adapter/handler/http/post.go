@@ -138,9 +138,14 @@ func (handler *PostHandler) GetPosts(ctx *gin.Context) {
 		return
 	}
 
+	postResponses := make([]postResponse, len(posts))
+	for i, post := range posts {
+		postResponses[i] = newPostResponse(&post)
+	}
+
 	total := uint64(len(posts))
 	meta := newMeta(total, limit, skip)
-	rsp := toMap(meta, posts, "posts")
+	rsp := toMap(meta, postResponses, "posts")
 
 	handleSuccess(ctx, rsp)
 }
@@ -203,13 +208,13 @@ type deletePostRequest struct {
 
 // DeletePost godoc
 //
-//	@Summary		Delete a user
-//	@Description	Delete a user by id
+//	@Summary		Delete a post
+//	@Description	Delete a post by id
 //	@Tags			Posts
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string			true	"Post ID (UUID)"
-//	@Success		200	{object}	response		"User deleted"
+//	@Success		200	{object}	response		"Post deleted"
 //	@Failure		400	{object}	errorResponse	"Validation error"
 //	@Failure		401	{object}	errorResponse	"Unauthorized error"
 //	@Failure		403	{object}	errorResponse	"Forbidden error"
