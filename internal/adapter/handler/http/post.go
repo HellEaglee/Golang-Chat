@@ -1,7 +1,6 @@
 package httphandler
 
 import (
-	"net/http"
 	"strconv"
 
 	"github.com/HellEaglee/Golang-Chat/internal/core/domain"
@@ -18,15 +17,30 @@ func NewPostHandler(service port.PostService) *PostHandler {
 	return &PostHandler{service: service}
 }
 
-type CreatePostRequest struct {
+type createPostRequest struct {
 	Title       string `json:"title" binding:"required" example:"PostTitleExample"`
 	Description string `json:"description" binding:"required" example:"PostDescriptionExample"`
 }
 
+// CreatePost godoc
+//
+//	@Summary		Create a new post
+//	@Description	Create a new blog post with title and description
+//	@Tags			Posts
+//	@Accept			json
+//	@Produce		json
+//	@Param			post	body		createPostRequest	true	"Create post request"
+//	@Success		201		{object}	postResponse		"Post created"
+//	@Failure		400		{object}	errorResponse		"Validation error"
+//	@Failure		401		{object}	errorResponse		"Unauthorized error"
+//	@Failure		404		{object}	errorResponse		"Data not found error"
+//	@Failure		409		{object}	errorResponse		"Data conflict error"
+//	@Failure		500		{object}	errorResponse		"Internal server error"
+//	@Router			/posts [post]
 func (handler *PostHandler) CreatePost(ctx *gin.Context) {
-	var req CreatePostRequest
+	var req createPostRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		validationError(ctx, err)
 		return
 	}
 
@@ -38,86 +52,131 @@ func (handler *PostHandler) CreatePost(ctx *gin.Context) {
 
 	createdPost, err := handler.service.CreatePost(ctx.Request.Context(), post)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create post"})
+		handleError(ctx, err)
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"post": createdPost})
+	rsp := newPostResponse(createdPost)
+	handleSuccess(ctx, rsp)
 }
 
-type GetPostRequest struct {
+type getPostRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
+// GetPost godoc
+//
+//	@Summary		Get a post by ID
+//	@Description	Get a single post by its UUID
+//	@Tags			Posts
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string			true	"Post ID (UUID)"
+//	@Success		200	{object}	postResponse	"Post found"
+//	@Failure		400	{object}	errorResponse	"Validation error"
+//	@Failure		404	{object}	errorResponse	"Data not found error"
+//	@Failure		500	{object}	errorResponse	"Internal server error"
+//	@Router			/posts/{id} [get]
 func (handler *PostHandler) GetPost(ctx *gin.Context) {
-	var req GetPostRequest
+	var req getPostRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		validationError(ctx, err)
 		return
 	}
 
 	post, err := handler.service.GetPost(ctx.Request.Context(), req.ID)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		handleError(ctx, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"post": post})
+	rsp := newPostResponse(post)
+
+	handleSuccess(ctx, rsp)
 }
 
-type GetPostsRequest struct {
+type getPostsRequest struct {
 	Skip  string `form:"skip" binding:"required,numeric" example:"0"`
 	Limit string `form:"limit" binding:"required,numeric,min=1" example:"5"`
 }
 
+// GetPosts godoc
+//
+//	@Summary		List posts with pagination
+//	@Description	Get a paginated list of posts
+//	@Tags			Posts
+//	@Accept			json
+//	@Produce		json
+//	@Param			skip	query		int				true	"Number of items to skip"	example(0)
+//	@Param			limit	query		int				true	"Number of items to take"	example(5)	minimum(1)
+//	@Success		200		{object}	meta			"Posts displayed"
+//	@Failure		400		{object}	errorResponse	"Validation error"
+//	@Failure		500		{object}	errorResponse	"Internal server error"
+//	@Router			/posts [get]
 func (handler *PostHandler) GetPosts(ctx *gin.Context) {
-	var req GetPostsRequest
+	var req getPostsRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		validationError(ctx, err)
 		return
 	}
 
 	skip, err := strconv.ParseUint(req.Skip, 10, 64)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "skip must be a valid number"})
+		handleError(ctx, err)
 		return
 	}
 
 	limit, err := strconv.ParseUint(req.Limit, 10, 64)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "limit must be a valid number"})
+		handleError(ctx, err)
 		return
 	}
 
 	posts, err := handler.service.GetPosts(ctx.Request.Context(), skip, limit)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		handleError(ctx, err)
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{
-		"total": len(posts),
-		"skip":  skip,
-		"limit": limit,
-		"posts": posts,
-	})
+
+	total := uint64(len(posts))
+	meta := newMeta(total, limit, skip)
+	rsp := toMap(meta, posts, "posts")
+
+	handleSuccess(ctx, rsp)
 }
 
-type UpdatePostRequest struct {
+type updatePostRequest struct {
 	Title       string `json:"title" binding:"omitempty,required"`
 	Description string `json:"description" binding:"omitempty,required"`
 }
 
+// UpdatePost godoc
+//
+//	@Summary		Update a post
+//	@Description	Update an existing post by ID
+//	@Tags			Posts
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string				true	"Post ID (UUID)"
+//	@Param			post	body		updatePostRequest	true	"Fields to update"
+//	@Success		200		{object}	postResponse		"Post updated"
+//	@Failure		400		{object}	errorResponse		"Validation error"
+//	@Failure		401		{object}	errorResponse		"Unauthorized error"
+//	@Failure		403		{object}	errorResponse		"Forbidden error"
+//	@Failure		404		{object}	errorResponse		"Data not found error"
+//	@Failure		500		{object}	errorResponse		"Internal server error"
+//	@Router			/posts/{id} [put]
 func (handler *PostHandler) UpdatePost(ctx *gin.Context) {
-	var req UpdatePostRequest
+	var req updatePostRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		validationError(ctx, err)
 		return
 	}
 
 	id := ctx.Param("id")
 	uuid, err := uuid.Parse(id)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid ID"})
+		validationError(ctx, err)
 		return
 	}
 
@@ -129,29 +188,46 @@ func (handler *PostHandler) UpdatePost(ctx *gin.Context) {
 
 	updatedPost, err := handler.service.UpdatePost(ctx.Request.Context(), post)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		handleError(ctx, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"post": updatedPost})
+	rsp := newPostResponse(updatedPost)
+
+	handleSuccess(ctx, rsp)
 }
 
-type GetDeleteRequest struct {
+type deletePostRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
+// DeletePost godoc
+//
+//	@Summary		Delete a user
+//	@Description	Delete a user by id
+//	@Tags			Posts
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string			true	"Post ID (UUID)"
+//	@Success		200	{object}	response		"User deleted"
+//	@Failure		400	{object}	errorResponse	"Validation error"
+//	@Failure		401	{object}	errorResponse	"Unauthorized error"
+//	@Failure		403	{object}	errorResponse	"Forbidden error"
+//	@Failure		404	{object}	errorResponse	"Data not found error"
+//	@Failure		500	{object}	errorResponse	"Internal server error"
+//	@Router			/posts/{id} [delete]
 func (handler *PostHandler) DeletePost(ctx *gin.Context) {
-	var req GetDeleteRequest
+	var req deletePostRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		validationError(ctx, err)
 		return
 	}
 
 	err := handler.service.DeletePost(ctx.Request.Context(), req.ID)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		handleError(ctx, err)
 		return
 	}
 
-	ctx.Status(200)
+	handleSuccess(ctx, nil)
 }

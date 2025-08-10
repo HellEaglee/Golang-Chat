@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 
+	_ "github.com/HellEaglee/Golang-Chat/docs"
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/config"
 	httphandler "github.com/HellEaglee/Golang-Chat/internal/adapter/handler/http"
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/logger"
@@ -14,6 +15,20 @@ import (
 	"github.com/HellEaglee/Golang-Chat/internal/core/service"
 )
 
+// @title           Golang Chat API
+// @version         1.0
+// @description     This is a chat application API.
+// @termsOfService  http://swagger.io/terms/
+//
+// @contact.name   API Support
+// @contact.url    http://www.swagger.io/support
+// @contact.email  support@swagger.io
+//
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+//
+// @host      localhost:8080
+// @BasePath  /v1
 func main() {
 	config, err := config.New()
 	if err != nil {

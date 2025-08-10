@@ -1,0 +1,285 @@
+basePath: /v1
+definitions:
+  httphandler.createPostRequest:
+    properties:
+      description:
+        example: PostDescriptionExample
+        type: string
+      title:
+        example: PostTitleExample
+        type: string
+    required:
+    - description
+    - title
+    type: object
+  httphandler.errorResponse:
+    properties:
+      messages:
+        example:
+        - Error message 1
+        - ' Error message 2'
+        items:
+          type: string
+        type: array
+      success:
+        example: false
+        type: boolean
+    type: object
+  httphandler.meta:
+    properties:
+      limit:
+        example: 10
+        type: integer
+      skip:
+        example: 0
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
+  httphandler.postResponse:
+    properties:
+      created_at:
+        example: "1970-01-01T00:00:00Z"
+        type: string
+      description:
+        example: This is a sample description
+        type: string
+      id:
+        example: 3342a227-1f2d-4422-a718-435c6a115f62
+        type: string
+      title:
+        example: My First Post
+        type: string
+      updated_at:
+        example: "1970-01-01T00:00:00Z"
+        type: string
+    type: object
+  httphandler.response:
+    properties:
+      data: {}
+      message:
+        example: Success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  httphandler.updatePostRequest:
+    properties:
+      description:
+        type: string
+      title:
+        type: string
+    required:
+    - description
+    - title
+    type: object
+info:
+  contact: {}
+  description: This is a simple RESTful Point of Sale (POS) Service API written in
+    Go using Gin web framework, PostgreSQL database, and Redis cache.
+  title: Go POS (Point of Sale) API
+  version: "1.0"
+paths:
+  /posts:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of posts
+      parameters:
+      - description: Number of items to skip
+        example: 0
+        in: query
+        name: skip
+        required: true
+        type: integer
+      - description: Number of items to take
+        example: 5
+        in: query
+        minimum: 1
+        name: limit
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Posts displayed
+          schema:
+            $ref: '#/definitions/httphandler.meta'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+      summary: List posts with pagination
+      tags:
+      - Posts
+    post:
+      consumes:
+      - application/json
+      description: Create a new blog post with title and description
+      parameters:
+      - description: Create post request
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/httphandler.createPostRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Post created
+          schema:
+            $ref: '#/definitions/httphandler.postResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "401":
+          description: Unauthorized error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "404":
+          description: Data not found error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "409":
+          description: Data conflict error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+      summary: Create a new post
+      tags:
+      - Posts
+  /posts/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user by id
+      parameters:
+      - description: Post ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User deleted
+          schema:
+            $ref: '#/definitions/httphandler.response'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "401":
+          description: Unauthorized error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "403":
+          description: Forbidden error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "404":
+          description: Data not found error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+      summary: Delete a user
+      tags:
+      - Posts
+    get:
+      consumes:
+      - application/json
+      description: Get a single post by its UUID
+      parameters:
+      - description: Post ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Post found
+          schema:
+            $ref: '#/definitions/httphandler.postResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "404":
+          description: Data not found error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+      summary: Get a post by ID
+      tags:
+      - Posts
+    put:
+      consumes:
+      - application/json
+      description: Update an existing post by ID
+      parameters:
+      - description: Post ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/httphandler.updatePostRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Post updated
+          schema:
+            $ref: '#/definitions/httphandler.postResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "401":
+          description: Unauthorized error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "403":
+          description: Forbidden error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "404":
+          description: Data not found error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+      summary: Update a post
+      tags:
+      - Posts
+schemes:
+- http
+- https
+swagger: "2.0"
