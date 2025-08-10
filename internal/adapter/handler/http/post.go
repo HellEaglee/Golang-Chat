@@ -2,6 +2,7 @@ package httphandler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/HellEaglee/Golang-Chat/internal/core/domain"
 	"github.com/HellEaglee/Golang-Chat/internal/core/port"
@@ -56,10 +57,27 @@ func (handler *PostHandler) GetPosts(ctx *gin.Context) {
 		return
 	}
 
-	posts, err := handler.service.GetPosts(ctx.Request.Context(), req.Skip, req.Limit)
+	skip, err := strconv.ParseUint(req.Skip, 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "skip must be a valid number"})
+		return
+	}
+
+	limit, err := strconv.ParseUint(req.Limit, 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "limit must be a valid number"})
+		return
+	}
+
+	posts, err := handler.service.GetPosts(ctx.Request.Context(), skip, limit)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"posts": posts})
+	ctx.JSON(http.StatusOK, gin.H{
+		"total": len(posts),
+		"skip":  skip,
+		"limit": limit,
+		"posts": posts,
+	})
 }

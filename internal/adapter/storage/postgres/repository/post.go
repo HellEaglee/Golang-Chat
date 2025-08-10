@@ -30,9 +30,9 @@ func (r *PostRepository) GetPostByID(ctx context.Context, id string) (*domain.Po
 	return &post, nil
 }
 
-func (r *PostRepository) GetPosts(ctx context.Context, skip string, limit string) ([]domain.Post, error) {
+func (r *PostRepository) GetPosts(ctx context.Context, skip uint64, limit uint64) ([]domain.Post, error) {
 	var posts []domain.Post
-	if err := r.db.WithContext(ctx).Find(&posts).Error; err != nil {
+	if err := r.db.WithContext(ctx).Limit(int(limit)).Offset(int(skip)).Find(&posts).Error; err != nil {
 		return nil, err
 	}
 	return posts, nil
