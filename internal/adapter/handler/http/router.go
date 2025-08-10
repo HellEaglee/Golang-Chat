@@ -29,12 +29,13 @@ func NewRouter(config *config.HTTP, postHandler PostHandler) (*Router, error) {
 
 	v1 := router.Group("/v1")
 	{
-		post := v1.Group("/posts")
+		posts := v1.Group("/posts")
 		{
-			post.POST("/", postHandler.CreatePost)
-			post.GET("/", postHandler.GetPosts)
-			post.GET("/:id", postHandler.GetPost)
-			post.PUT("/:id", postHandler.UpdatePost)
+			posts.POST("/", postHandler.CreatePost)
+			posts.GET("/", postHandler.GetPosts)
+			posts.GET("/:id", postHandler.GetPost)
+			posts.PUT("/:id", postHandler.UpdatePost)
+			posts.DELETE("/:id", postHandler.DeletePost)
 		}
 	}
 

@@ -11,7 +11,7 @@ type PostRepository interface {
 	GetPostByID(ctx context.Context, id string) (*domain.Post, error)
 	GetPosts(ctx context.Context, skip uint64, limit uint64) ([]domain.Post, error)
 	UpdatePost(ctx context.Context, post *domain.Post) (*domain.Post, error)
-	// DeletePost(ctx context.Context, id string) error
+	DeletePost(ctx context.Context, id string) error
 }
 
 type PostService interface {
@@ -19,5 +19,5 @@ type PostService interface {
 	GetPost(ctx context.Context, id string) (*domain.Post, error)
 	GetPosts(ctx context.Context, skip uint64, limit uint64) ([]domain.Post, error)
 	UpdatePost(ctx context.Context, post *domain.Post) (*domain.Post, error)
-	// DeletePost(ctx context.Context, id string) error
+	DeletePost(ctx context.Context, id string) error
 }

@@ -59,3 +59,10 @@ func (r *PostRepository) UpdatePost(ctx context.Context, post *domain.Post) (*do
 // 	}
 // 	return &updatedPost, nil
 // }
+
+func (r *PostRepository) DeletePost(ctx context.Context, id string) error {
+	if err := r.db.WithContext(ctx).Where("id = ?", id).Delete(&domain.Post{}).Error; err != nil {
+		return err
+	}
+	return nil
+}

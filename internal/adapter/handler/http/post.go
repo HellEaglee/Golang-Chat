@@ -135,3 +135,23 @@ func (handler *PostHandler) UpdatePost(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{"post": updatedPost})
 }
+
+type GetDeleteRequest struct {
+	ID string `uri:"id" binding:"required,uuid"`
+}
+
+func (handler *PostHandler) DeletePost(ctx *gin.Context) {
+	var req GetDeleteRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err := handler.service.DeletePost(ctx.Request.Context(), req.ID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.Status(200)
+}

@@ -30,3 +30,7 @@ func (s *PostService) GetPosts(ctx context.Context, skip uint64, limit uint64) (
 func (s *PostService) UpdatePost(ctx context.Context, post *domain.Post) (*domain.Post, error) {
 	return s.repo.UpdatePost(ctx, post)
 }
+
+func (s *PostService) DeletePost(ctx context.Context, id string) error {
+	return s.repo.DeletePost(ctx, id)
+}
