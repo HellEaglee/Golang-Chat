@@ -19,6 +19,10 @@ func (s *PostService) CreatePost(ctx context.Context, post *domain.Post) (*domai
 	return s.repo.CreatePost(ctx, post)
 }
 
+func (s *PostService) GetPost(ctx context.Context, id string) (*domain.Post, error) {
+	return s.repo.GetPostByID(ctx, id)
+}
+
 func (s *PostService) GetPosts(ctx context.Context, skip uint64, limit uint64) ([]domain.Post, error) {
 	return s.repo.GetPosts(ctx, skip, limit)
 }

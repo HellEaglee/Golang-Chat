@@ -45,6 +45,26 @@ func (handler *PostHandler) CreatePost(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, gin.H{"post": createPost})
 }
 
+type GetPostRequest struct {
+	ID string `uri:"id" binding:"required,uuid"`
+}
+
+func (handler *PostHandler) GetPost(ctx *gin.Context) {
+	var req GetPostRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	post, err := handler.service.GetPost(ctx.Request.Context(), req.ID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"post": post})
+}
+
 type GetPostsRequest struct {
 	Skip  string `form:"skip" binding:"required,numeric" example:"0"`
 	Limit string `form:"limit" binding:"required,numeric,min=1" example:"5"`

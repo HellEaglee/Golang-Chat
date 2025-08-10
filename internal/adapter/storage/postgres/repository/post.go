@@ -24,7 +24,7 @@ func (r *PostRepository) CreatePost(ctx context.Context, post *domain.Post) (*do
 
 func (r *PostRepository) GetPostByID(ctx context.Context, id string) (*domain.Post, error) {
 	var post domain.Post
-	if err := r.db.WithContext(ctx).First(post, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&post).Error; err != nil {
 		return nil, err
 	}
 	return &post, nil
