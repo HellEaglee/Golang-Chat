@@ -81,6 +81,25 @@ func newPostResponse(post *domain.Post) postResponse {
 	}
 }
 
+type userResponse struct {
+	ID        uuid.UUID `json:"id" example:"3342a227-1f2d-4422-a718-435c6a115f62"`
+	Name      string    `json:"name" example:"John"`
+	Email     string    `json:"email" example:"john@gmail.com"`
+	CreatedAt time.Time `json:"created_at" example:"1970-01-01T00:00:00Z"`
+	UpdatedAt time.Time `json:"updated_at" example:"1970-01-01T00:00:00Z"`
+}
+
+// newPostResponse is a helper function to create a response body for handling post data
+func newUserResponse(user *domain.User) userResponse {
+	return userResponse{
+		ID:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}
+}
+
 // validationError sends an error response for some specific request validation error
 func validationError(ctx *gin.Context, err error) {
 	errMsgs := parseError(err)

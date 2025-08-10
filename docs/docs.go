@@ -9,7 +9,16 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {},
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "http://www.swagger.io/support",
+            "email": "support@swagger.io"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -309,6 +318,70 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/users": {
+            "post": {
+                "description": "Create a new user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Create a new user",
+                "parameters": [
+                    {
+                        "description": "Create user request",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.createUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "User created",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.userResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Data not found error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Data conflict error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -326,6 +399,24 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "example": "PostTitleExample"
+                }
+            }
+        },
+        "httphandler.createUserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "john@gmail.com"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "12345678"
                 }
             }
         },
@@ -418,6 +509,31 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "httphandler.userResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "1970-01-01T00:00:00Z"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john@gmail.com"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "3342a227-1f2d-4422-a718-435c6a115f62"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "John"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "example": "1970-01-01T00:00:00Z"
+                }
+            }
         }
     }
 }`
@@ -425,11 +541,11 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "",
+	Host:             "localhost:8080",
 	BasePath:         "/v1",
-	Schemes:          []string{"http", "https"},
-	Title:            "Go POS (Point of Sale) API",
-	Description:      "This is a simple RESTful Point of Sale (POS) Service API written in Go using Gin web framework, PostgreSQL database, and Redis cache.",
+	Schemes:          []string{},
+	Title:            "Golang Chat API",
+	Description:      "This is a chat application API.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

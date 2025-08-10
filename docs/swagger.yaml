@@ -12,6 +12,19 @@ definitions:
     - description
     - title
     type: object
+  httphandler.createUserRequest:
+    properties:
+      email:
+        example: john@gmail.com
+        type: string
+      password:
+        example: "12345678"
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
   httphandler.errorResponse:
     properties:
       messages:
@@ -75,11 +88,36 @@ definitions:
     - description
     - title
     type: object
+  httphandler.userResponse:
+    properties:
+      created_at:
+        example: "1970-01-01T00:00:00Z"
+        type: string
+      email:
+        example: john@gmail.com
+        type: string
+      id:
+        example: 3342a227-1f2d-4422-a718-435c6a115f62
+        type: string
+      name:
+        example: John
+        type: string
+      updated_at:
+        example: "1970-01-01T00:00:00Z"
+        type: string
+    type: object
+host: localhost:8080
 info:
-  contact: {}
-  description: This is a simple RESTful Point of Sale (POS) Service API written in
-    Go using Gin web framework, PostgreSQL database, and Redis cache.
-  title: Go POS (Point of Sale) API
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a chat application API.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Golang Chat API
   version: "1.0"
 paths:
   /posts:
@@ -279,7 +317,46 @@ paths:
       summary: Update a post
       tags:
       - Posts
-schemes:
-- http
-- https
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: Create user request
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/httphandler.createUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created
+          schema:
+            $ref: '#/definitions/httphandler.userResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "401":
+          description: Unauthorized error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "404":
+          description: Data not found error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "409":
+          description: Data conflict error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+      summary: Create a new user
+      tags:
+      - Users
 swagger: "2.0"

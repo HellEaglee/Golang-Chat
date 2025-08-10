@@ -8,10 +8,10 @@ import (
 )
 
 type Post struct {
-	ID          uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
-	Title       string    `gorm:"not null"`
-	Description string    `gorm:"type:text"`
+	ID          uuid.UUID
+	Title       string
+	Description string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
-	DeletedAt   gorm.DeletedAt `gorm:"index"`
+	DeletedAt   gorm.DeletedAt
 }

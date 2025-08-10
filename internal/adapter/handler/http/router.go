@@ -16,7 +16,7 @@ type Router struct {
 	*gin.Engine
 }
 
-func NewRouter(config *config.HTTP, postHandler PostHandler) (*Router, error) {
+func NewRouter(config *config.HTTP, postHandler PostHandler, userHandler UserHandler) (*Router, error) {
 	if config.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -39,6 +39,10 @@ func NewRouter(config *config.HTTP, postHandler PostHandler) (*Router, error) {
 			posts.GET("/:id", postHandler.GetPost)
 			posts.PUT("/:id", postHandler.UpdatePost)
 			posts.DELETE("/:id", postHandler.DeletePost)
+		}
+		users := v1.Group("/users")
+		{
+			users.POST("/", userHandler.CreateUser)
 		}
 	}
 
