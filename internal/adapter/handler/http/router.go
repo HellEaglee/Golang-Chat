@@ -1,4 +1,4 @@
-package http
+package httphandler
 
 import (
 	"log/slog"
@@ -14,7 +14,7 @@ type Router struct {
 	*gin.Engine
 }
 
-func NewRouter(config *config.HTTP) (*Router, error) {
+func NewRouter(config *config.HTTP, postHandler PostHandler) (*Router, error) {
 	if config.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -26,6 +26,14 @@ func NewRouter(config *config.HTTP) (*Router, error) {
 
 	router := gin.New()
 	router.Use(sloggin.New(slog.Default()), gin.Recovery(), cors.New(ginConfig))
+
+	v1 := router.Group("/v1")
+	{
+		post := v1.Group("/posts")
+		{
+			post.POST("/", postHandler.CreatePost)
+		}
+	}
 
 	return &Router{
 		router,

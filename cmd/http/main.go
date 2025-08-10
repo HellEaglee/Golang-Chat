@@ -7,9 +7,11 @@ import (
 	"os"
 
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/config"
-	"github.com/HellEaglee/Golang-Chat/internal/adapter/handler/http"
+	httphandler "github.com/HellEaglee/Golang-Chat/internal/adapter/handler/http"
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/logger"
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/storage/postgres"
+	"github.com/HellEaglee/Golang-Chat/internal/adapter/storage/postgres/repository"
+	"github.com/HellEaglee/Golang-Chat/internal/core/service"
 )
 
 func main() {
@@ -35,8 +37,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	router, err := http.NewRouter(
+	// DI
+	postRepo := repository.NewPostRepository(db)
+	postService := service.NewPostService(postRepo)
+	postHandler := httphandler.NewPostHandler(postService)
+
+	router, err := httphandler.NewRouter(
 		config.HTTP,
+		*postHandler,
 	)
 	if err != nil {
 		slog.Error("Error initializing router", "error", err)
