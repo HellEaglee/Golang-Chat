@@ -26,3 +26,7 @@ func (s *PostService) GetPost(ctx context.Context, id string) (*domain.Post, err
 func (s *PostService) GetPosts(ctx context.Context, skip uint64, limit uint64) ([]domain.Post, error) {
 	return s.repo.GetPosts(ctx, skip, limit)
 }
+
+func (s *PostService) UpdatePost(ctx context.Context, post *domain.Post) (*domain.Post, error) {
+	return s.repo.UpdatePost(ctx, post)
+}

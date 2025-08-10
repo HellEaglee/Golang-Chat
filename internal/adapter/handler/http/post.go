@@ -36,13 +36,13 @@ func (handler *PostHandler) CreatePost(ctx *gin.Context) {
 		Description: req.Description,
 	}
 
-	createPost, err := handler.service.CreatePost(ctx.Request.Context(), post)
+	createdPost, err := handler.service.CreatePost(ctx.Request.Context(), post)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create post"})
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"post": createPost})
+	ctx.JSON(http.StatusCreated, gin.H{"post": createdPost})
 }
 
 type GetPostRequest struct {
@@ -100,4 +100,38 @@ func (handler *PostHandler) GetPosts(ctx *gin.Context) {
 		"limit": limit,
 		"posts": posts,
 	})
+}
+
+type UpdatePostRequest struct {
+	Title       string `json:"title" binding:"omitempty,required"`
+	Description string `json:"description" binding:"omitempty,required"`
+}
+
+func (handler *PostHandler) UpdatePost(ctx *gin.Context) {
+	var req UpdatePostRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	id := ctx.Param("id")
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid ID"})
+		return
+	}
+
+	post := &domain.Post{
+		ID:          uuid,
+		Title:       req.Title,
+		Description: req.Description,
+	}
+
+	updatedPost, err := handler.service.UpdatePost(ctx.Request.Context(), post)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"post": updatedPost})
 }
