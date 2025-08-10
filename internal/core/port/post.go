@@ -8,8 +8,16 @@ import (
 
 type PostRepository interface {
 	CreatePost(ctx context.Context, post *domain.Post) (*domain.Post, error)
+	// GetPostByID(ctx context.Context, id string) (*domain.Post, error)
+	GetPosts(ctx context.Context, skip string, limit string) ([]domain.Post, error)
+	// UpdatePost(ctx context.Context, post *domain.Post) (*domain.Post, error)
+	// DeletePost(ctx context.Context, id string) error
 }
 
 type PostService interface {
 	CreatePost(ctx context.Context, post *domain.Post) (*domain.Post, error)
+	// GetPost(ctx context.Context, id string) (*domain.Post, error)
+	GetPosts(ctx context.Context, skip string, limit string) ([]domain.Post, error)
+	// UpdatePost(ctx context.Context, post *domain.Post) (*domain.Post, error)
+	// DeletePost(ctx context.Context, id string) error
 }

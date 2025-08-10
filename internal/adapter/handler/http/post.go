@@ -43,3 +43,23 @@ func (handler *PostHandler) CreatePost(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusCreated, gin.H{"post": createPost})
 }
+
+type GetPostsRequest struct {
+	Skip  string `form:"skip" binding:"required,numeric" example:"0"`
+	Limit string `form:"limit" binding:"required,numeric,min=1" example:"5"`
+}
+
+func (handler *PostHandler) GetPosts(ctx *gin.Context) {
+	var req GetPostsRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	posts, err := handler.service.GetPosts(ctx.Request.Context(), req.Skip, req.Limit)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"posts": posts})
+}

@@ -32,6 +32,7 @@ func NewRouter(config *config.HTTP, postHandler PostHandler) (*Router, error) {
 		post := v1.Group("/posts")
 		{
 			post.POST("/", postHandler.CreatePost)
+			post.GET("", postHandler.GetPosts)
 		}
 	}
 
