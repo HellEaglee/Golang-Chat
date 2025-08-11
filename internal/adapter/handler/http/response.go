@@ -75,26 +75,6 @@ func newAuthResponse(accessToken, refreshToken string) authResponse {
 	}
 }
 
-// postResponse represents a post response body
-type postResponse struct {
-	ID          uuid.UUID `json:"id" example:"3342a227-1f2d-4422-a718-435c6a115f62"`
-	Title       string    `json:"title" example:"My First Post"`
-	Description string    `json:"description" example:"This is a sample description"`
-	CreatedAt   time.Time `json:"created_at" example:"1970-01-01T00:00:00Z"`
-	UpdatedAt   time.Time `json:"updated_at" example:"1970-01-01T00:00:00Z"`
-}
-
-// newPostResponse is a helper function to create a response body for handling post data
-func newPostResponse(post *domain.Post) postResponse {
-	return postResponse{
-		ID:          post.ID,
-		Title:       post.Title,
-		Description: post.Description,
-		CreatedAt:   post.CreatedAt,
-		UpdatedAt:   post.UpdatedAt,
-	}
-}
-
 type userResponse struct {
 	ID        uuid.UUID `json:"id" example:"3342a227-1f2d-4422-a718-435c6a115f62"`
 	Name      string    `json:"name" example:"John"`

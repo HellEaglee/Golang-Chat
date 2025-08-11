@@ -68,14 +68,9 @@ func main() {
 	authService := service.NewAuthService(userRepo, token)
 	authHandler := httphandler.NewAuthHandler(authService)
 
-	postRepo := repository.NewPostRepository(db)
-	postService := service.NewPostService(postRepo)
-	postHandler := httphandler.NewPostHandler(postService)
-
 	router, err := httphandler.NewRouter(
 		config.HTTP,
 		*authHandler,
-		*postHandler,
 		*userHandler,
 	)
 	if err != nil {

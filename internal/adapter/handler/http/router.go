@@ -16,7 +16,7 @@ type Router struct {
 	*gin.Engine
 }
 
-func NewRouter(config *config.HTTP, authHandler AuthHandler, postHandler PostHandler, userHandler UserHandler) (*Router, error) {
+func NewRouter(config *config.HTTP, authHandler AuthHandler, userHandler UserHandler) (*Router, error) {
 	if config.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -37,14 +37,6 @@ func NewRouter(config *config.HTTP, authHandler AuthHandler, postHandler PostHan
 			auth.POST("/login", authHandler.Login)
 			auth.POST("/register", authHandler.Register)
 			auth.POST("/refresh", authHandler.Refresh)
-		}
-		posts := v1.Group("/posts")
-		{
-			posts.POST("/", postHandler.CreatePost)
-			posts.GET("/", postHandler.GetPosts)
-			posts.GET("/:id", postHandler.GetPost)
-			posts.PUT("/:id", postHandler.UpdatePost)
-			posts.DELETE("/:id", postHandler.DeletePost)
 		}
 		users := v1.Group("/users")
 		{
