@@ -36,6 +36,7 @@ func NewRouter(config *config.HTTP, authHandler AuthHandler, postHandler PostHan
 		{
 			auth.POST("/login", authHandler.Login)
 			auth.POST("/register", authHandler.Register)
+			auth.POST("/refresh", authHandler.Refresh)
 		}
 		posts := v1.Group("/posts")
 		{

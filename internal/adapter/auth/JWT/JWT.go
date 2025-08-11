@@ -139,3 +139,55 @@ func (t *JWTToken) CreateRefreshToken(ctx context.Context, user *domain.User) (s
 
 	return tokenString, nil
 }
+
+func (t *JWTToken) VerifyRefreshToken(ctx context.Context, tokenString string) (*domain.TokenPayload, error) {
+	claims := &TokenClaims{}
+
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (any, error) {
+		return t.refreshSecretKey, nil
+	})
+	if err != nil {
+		if err.Error() == "Token is expired" || err.Error() == "token is expired" || strings.Contains(err.Error(), "expired") {
+			return nil, util.ErrExpiredAccessToken
+		}
+	}
+	if !token.Valid {
+		return nil, util.ErrInvalidAccessToken
+	}
+	storenToken, err := t.tr.GetTokenByID(ctx, claims.ID)
+	if err != nil {
+		return nil, util.ErrInvalidRefreshToken
+	}
+	if time.Now().After(storenToken.ExpiresAt) {
+		return nil, util.ErrExpiredRefreshToken
+	}
+
+	payload := &domain.TokenPayload{
+		ID:     uuid.MustParse(claims.RegisteredClaims.ID),
+		UserID: claims.UserID,
+	}
+
+	return payload, nil
+}
+
+func (t *JWTToken) ExtractTokenID(tokenString string) (string, error) {
+	token, _, err := new(jwt.Parser).ParseUnverified(tokenString, jwt.MapClaims{})
+	if err != nil {
+		return "", util.ErrInternal
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", util.ErrInternal
+	}
+
+	if jti, ok := claims["jti"].(string); ok {
+		return jti, nil
+	}
+
+	return "", util.ErrInternal
+}
+
+func (t *JWTToken) RevokeToken(ctx context.Context, tokenID string) error {
+	return t.tr.RevokeToken(ctx, tokenID)
+}

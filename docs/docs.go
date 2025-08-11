@@ -76,6 +76,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/refresh": {
+            "post": {
+                "description": "Refresh tokens if old are valid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Refresh tokens",
+                "parameters": [
+                    {
+                        "description": "Refresh tokens",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.refreshRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Succesfully logged in",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.authResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/register": {
             "post": {
                 "description": "Register a user and returns an access token if the credentials are valid.",
@@ -743,11 +795,11 @@ const docTemplate = `{
             "properties": {
                 "accessToken": {
                     "type": "string",
-                    "example": "Gdh5kiOTyyaQ3_bNykYDeYHO21Jg2..."
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZWJhM2FhMjktNDQ1Yy00ODkyLWEwYmMtY2RmZDUxZWI2MDU2IiwiaXNzIjoiZ29sYW5nLWNoYXQiLCJleHAiOjE3NTQ5MDYxODksIm5iZiI6MTc1NDkwNTI4OSwiaWF0IjoxNzU0OTA1Mjg5LCJqdGkiOiI2Njg3N2Y4OC05Y2Q5LTQ2NDItOWUxNi1jZTU0OTY3YzM0ZjkifQ.ogDWegqsVOuUjsuffpHXGhdibtMFPwYdtQBzcUNKvUk"
                 },
                 "refreshToken": {
                     "type": "string",
-                    "example": "Gdh5kiOTyyaQ3_bNykYDeYHO21Jg2..."
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZWJhM2FhMjktNDQ1Yy00ODkyLWEwYmMtY2RmZDUxZWI2MDU2IiwiaXNzIjoiZ29sYW5nLWNoYXQiLCJleHAiOjE3NTQ5MDYxODksIm5iZiI6MTc1NDkwNTI4OSwiaWF0IjoxNzU0OTA1Mjg5LCJqdGkiOiI2Njg3N2Y4OC05Y2Q5LTQ2NDItOWUxNi1jZTU0OTY3YzM0ZjkifQ.ogDWegqsVOuUjsuffpHXGhdibtMFPwYdtQBzcUNKvUk"
                 }
             }
         },
@@ -844,6 +896,23 @@ const docTemplate = `{
                 "updated_at": {
                     "type": "string",
                     "example": "1970-01-01T00:00:00Z"
+                }
+            }
+        },
+        "httphandler.refreshRequest": {
+            "type": "object",
+            "required": [
+                "accessToken",
+                "refreshToken"
+            ],
+            "properties": {
+                "accessToken": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZWJhM2FhMjktNDQ1Yy00ODkyLWEwYmMtY2RmZDUxZWI2MDU2IiwiaXNzIjoiZ29sYW5nLWNoYXQiLCJleHAiOjE3NTQ5MDYxODksIm5iZiI6MTc1NDkwNTI4OSwiaWF0IjoxNzU0OTA1Mjg5LCJqdGkiOiI2Njg3N2Y4OC05Y2Q5LTQ2NDItOWUxNi1jZTU0OTY3YzM0ZjkifQ.ogDWegqsVOuUjsuffpHXGhdibtMFPwYdtQBzcUNKvUk"
+                },
+                "refreshToken": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZWJhM2FhMjktNDQ1Yy00ODkyLWEwYmMtY2RmZDUxZWI2MDU2IiwiaXNzIjoiZ29sYW5nLWNoYXQiLCJleHAiOjE3NTQ5MDYxODksIm5iZiI6MTc1NDkwNTI4OSwiaWF0IjoxNzU0OTA1Mjg5LCJqdGkiOiI2Njg3N2Y4OC05Y2Q5LTQ2NDItOWUxNi1jZTU0OTY3YzM0ZjkifQ.ogDWegqsVOuUjsuffpHXGhdibtMFPwYdtQBzcUNKvUk"
                 }
             }
         },

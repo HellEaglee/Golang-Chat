@@ -63,8 +63,8 @@ func newMeta(total, limit, skip uint64) meta {
 
 // authResponse represents an authentication response body
 type authResponse struct {
-	AccessToken  string `json:"accessToken" example:"Gdh5kiOTyyaQ3_bNykYDeYHO21Jg2..."`
-	RefreshToken string `json:"refreshToken" example:"Gdh5kiOTyyaQ3_bNykYDeYHO21Jg2..."`
+	AccessToken  string `json:"accessToken" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZWJhM2FhMjktNDQ1Yy00ODkyLWEwYmMtY2RmZDUxZWI2MDU2IiwiaXNzIjoiZ29sYW5nLWNoYXQiLCJleHAiOjE3NTQ5MDYxODksIm5iZiI6MTc1NDkwNTI4OSwiaWF0IjoxNzU0OTA1Mjg5LCJqdGkiOiI2Njg3N2Y4OC05Y2Q5LTQ2NDItOWUxNi1jZTU0OTY3YzM0ZjkifQ.ogDWegqsVOuUjsuffpHXGhdibtMFPwYdtQBzcUNKvUk"`
+	RefreshToken string `json:"refreshToken" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZWJhM2FhMjktNDQ1Yy00ODkyLWEwYmMtY2RmZDUxZWI2MDU2IiwiaXNzIjoiZ29sYW5nLWNoYXQiLCJleHAiOjE3NTQ5MDYxODksIm5iZiI6MTc1NDkwNTI4OSwiaWF0IjoxNzU0OTA1Mjg5LCJqdGkiOiI2Njg3N2Y4OC05Y2Q5LTQ2NDItOWUxNi1jZTU0OTY3YzM0ZjkifQ.ogDWegqsVOuUjsuffpHXGhdibtMFPwYdtQBzcUNKvUk"`
 }
 
 // newAuthResponse is a helper function to create a response body for handling authentication data
