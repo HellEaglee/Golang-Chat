@@ -18,7 +18,10 @@ type (
 		Env  string
 	}
 	Token struct {
-		Duration string
+		Duration        string
+		Secret          string
+		DurationRefresh string
+		SecretRefresh   string
 	}
 	DB struct {
 		Connection string
@@ -50,7 +53,10 @@ func New() (*Container, error) {
 	}
 
 	token := &Token{
-		Duration: os.Getenv("TOKEN_DURATION"),
+		Duration:        os.Getenv("TOKEN_DURATION"),
+		Secret:          os.Getenv("TOKEN_SECRET"),
+		DurationRefresh: os.Getenv("REFRESH_TOKEN_DURATION"),
+		SecretRefresh:   os.Getenv("REFRESH_TOKEN_SECRET"),
 	}
 
 	db := &DB{

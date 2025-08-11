@@ -18,6 +18,110 @@
     "host": "localhost:8080",
     "basePath": "/v1",
     "paths": {
+        "/auth/login": {
+            "post": {
+                "description": "Logs in a registered user and returns access/refresh tokens if the credentials are valid.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login and get access/refresh tokens",
+                "parameters": [
+                    {
+                        "description": "Login request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.authRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Succesfully logged in",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.authResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "description": "Register a user and returns an access token if the credentials are valid.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Register and get an access token",
+                "parameters": [
+                    {
+                        "description": "Register request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.authRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Succesfully logged in",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.authResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/posts": {
             "get": {
                 "description": "Get a paginated list of posts",
@@ -610,6 +714,37 @@
         }
     },
     "definitions": {
+        "httphandler.authRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "test@example.com"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "12345678"
+                }
+            }
+        },
+        "httphandler.authResponse": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string",
+                    "example": "Gdh5kiOTyyaQ3_bNykYDeYHO21Jg2..."
+                },
+                "refreshToken": {
+                    "type": "string",
+                    "example": "Gdh5kiOTyyaQ3_bNykYDeYHO21Jg2..."
+                }
+            }
+        },
         "httphandler.createPostRequest": {
             "type": "object",
             "required": [

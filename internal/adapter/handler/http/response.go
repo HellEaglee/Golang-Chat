@@ -22,8 +22,8 @@ var errorStatusMap = map[error]int{
 	util.ErrEmptyAuthorizationHeader:   http.StatusUnauthorized,
 	util.ErrInvalidAuthorizationHeader: http.StatusUnauthorized,
 	util.ErrInvalidAuthorizationType:   http.StatusUnauthorized,
-	util.ErrInvalidToken:               http.StatusUnauthorized,
-	util.ErrExpiredToken:               http.StatusUnauthorized,
+	util.ErrInvalidAccessToken:         http.StatusUnauthorized,
+	util.ErrExpiredAccessToken:         http.StatusUnauthorized,
 	util.ErrForbidden:                  http.StatusForbidden,
 	util.ErrNoUpdatedData:              http.StatusBadRequest,
 	util.ErrInsufficientStock:          http.StatusBadRequest,
@@ -58,6 +58,20 @@ func newMeta(total, limit, skip uint64) meta {
 		Total: total,
 		Limit: limit,
 		Skip:  skip,
+	}
+}
+
+// authResponse represents an authentication response body
+type authResponse struct {
+	AccessToken  string `json:"accessToken" example:"Gdh5kiOTyyaQ3_bNykYDeYHO21Jg2..."`
+	RefreshToken string `json:"refreshToken" example:"Gdh5kiOTyyaQ3_bNykYDeYHO21Jg2..."`
+}
+
+// newAuthResponse is a helper function to create a response body for handling authentication data
+func newAuthResponse(accessToken, refreshToken string) authResponse {
+	return authResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
 	}
 }
 

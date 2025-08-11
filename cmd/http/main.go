@@ -7,6 +7,7 @@ import (
 	"os"
 
 	_ "github.com/HellEaglee/Golang-Chat/docs"
+	jwt "github.com/HellEaglee/Golang-Chat/internal/adapter/auth/JWT"
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/config"
 	httphandler "github.com/HellEaglee/Golang-Chat/internal/adapter/handler/http"
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/logger"
@@ -53,16 +54,27 @@ func main() {
 	}
 
 	// DI
-	postRepo := repository.NewPostRepository(db)
-	postService := service.NewPostService(postRepo)
-	postHandler := httphandler.NewPostHandler(postService)
+	tokenRepo := repository.NewTokenRepository(db)
+	token, err := jwt.New(config.Token, tokenRepo)
+	if err != nil {
+		slog.Error("Error initializing token service", "error", err)
+		os.Exit(1)
+	}
 
 	userRepo := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepo)
 	userHandler := httphandler.NewUserHandler(userService)
 
+	authService := service.NewAuthService(userRepo, token)
+	authHandler := httphandler.NewAuthHandler(authService)
+
+	postRepo := repository.NewPostRepository(db)
+	postService := service.NewPostService(postRepo)
+	postHandler := httphandler.NewPostHandler(postService)
+
 	router, err := httphandler.NewRouter(
 		config.HTTP,
+		*authHandler,
 		*postHandler,
 		*userHandler,
 	)
