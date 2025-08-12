@@ -10,6 +10,7 @@ DROP INDEX IF EXISTS idx_chat_participants_chat_user;
 DROP INDEX IF EXISTS idx_chat_participants_active;
 DROP INDEX IF EXISTS idx_chat_participants_user_id;
 DROP INDEX IF EXISTS idx_chat_participants_chat_id;
+DROP INDEX IF EXISTS idx_chat_participants_deleted_at;
 DROP INDEX IF EXISTS idx_chats_created_at;
 DROP INDEX IF EXISTS idx_chats_deleted_at;
 
