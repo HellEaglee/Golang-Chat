@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Chat struct {
@@ -12,7 +13,7 @@ type Chat struct {
 	IsGroup   bool
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt time.Time
+	DeletedAt gorm.DeletedAt
 
 	Participants []ChatParticipant
 	Messages     []Message
@@ -28,7 +29,12 @@ type ChatParticipant struct {
 	IsActive  bool
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt
 
 	Chat Chat
 	User User
+}
+
+func (ChatParticipant) TableName() string {
+	return "chat_participants"
 }
