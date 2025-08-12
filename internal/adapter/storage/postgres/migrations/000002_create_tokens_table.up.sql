@@ -1,4 +1,3 @@
-
 -- Create tokens table
 CREATE TABLE IF NOT EXISTS tokens (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

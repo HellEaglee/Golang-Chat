@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"time"
 
 	_ "github.com/HellEaglee/Golang-Chat/docs"
 	jwt "github.com/HellEaglee/Golang-Chat/internal/adapter/auth/JWT"
@@ -15,6 +16,10 @@ import (
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/storage/postgres/repository"
 	"github.com/HellEaglee/Golang-Chat/internal/core/service"
 )
+
+func init() {
+	time.Local = time.UTC
+}
 
 // @title			Golang Chat API
 // @version		1.0
