@@ -20,7 +20,6 @@ type Chat struct {
 }
 
 type ChatParticipant struct {
-	ID        uuid.UUID
 	ChatID    uuid.UUID
 	UserID    uuid.UUID
 	Role      string

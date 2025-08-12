@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type TokenPayload struct {
@@ -18,5 +17,5 @@ type Token struct {
 	Token     string
 	CreatedAt time.Time
 	ExpiresAt time.Time
-	RevokedAt *gorm.DeletedAt
+	RevokedAt *time.Time
 }
