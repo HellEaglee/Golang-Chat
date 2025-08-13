@@ -99,8 +99,8 @@ func (r *ChatRepository) UpdateChatParticipant(ctx context.Context, chatParticip
 	return &updatedChatParticipant, nil
 }
 
-func (r *ChatRepository) DeleteChatParticipant(ctx context.Context, id string) error {
-	if err := r.db.WithContext(ctx).Model(&domain.ChatParticipant{}).Where("id = ?", id).Updates(map[string]interface{}{
+func (r *ChatRepository) DeleteChatParticipant(ctx context.Context, chatID, userID string) error {
+	if err := r.db.WithContext(ctx).Model(&domain.ChatParticipant{}).Where("chat_id = $1 AND user_id = $2", chatID, userID).Updates(map[string]interface{}{
 		"deleted_at": time.Now,
 		"left_at":    time.Now,
 	}).Error; err != nil {
