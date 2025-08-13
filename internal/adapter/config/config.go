@@ -30,6 +30,7 @@ type (
 		User       string
 		Password   string
 		Name       string
+		SSL        string
 	}
 	HTTP struct {
 		Env            string
@@ -66,6 +67,7 @@ func New() (*Container, error) {
 		User:       os.Getenv("DB_USER"),
 		Password:   os.Getenv("DB_PASSWORD"),
 		Name:       os.Getenv("DB_NAME"),
+		SSL:        os.Getenv("DB_SSL"),
 	}
 
 	http := &HTTP{

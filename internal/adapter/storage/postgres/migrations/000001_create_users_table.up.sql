@@ -1,3 +1,5 @@
+ALTER DATABASE golang_chat SET timezone = 'UTC';
+
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS users (
