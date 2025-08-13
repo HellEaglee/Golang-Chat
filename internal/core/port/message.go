@@ -1,0 +1,20 @@
+package port
+
+import (
+	"context"
+
+	"github.com/HellEaglee/Golang-Chat/internal/core/domain"
+)
+
+type MessageRepository interface {
+	CreateMessage(ctx context.Context, message *domain.Message) (*domain.Message, error)
+	GetMessageByID(ctx context.Context, id string) (*domain.Message, error)
+	GetMessagesByChatID(ctx context.Context, chatID string) ([]domain.Message, error)
+	UpdateMessage(ctx context.Context, message *domain.Message) (*domain.Message, error)
+	DeleteMessage(ctx context.Context, id string) error
+}
+
+type MessageReadRepository interface {
+	CreateMessageRead(ctx context.Context, messageRead *domain.MessageRead) (*domain.MessageRead, error)
+	GetMessageReadsByMessageID(ctx context.Context, id string) ([]domain.MessageRead, error)
+}

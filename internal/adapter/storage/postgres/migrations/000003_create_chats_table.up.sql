@@ -15,7 +15,6 @@ CREATE TABLE IF NOT EXISTS chat_participants (
     role VARCHAR(20) NOT NULL DEFAULT 'member', -- 'admin', 'member', 'moderator'
     joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     left_at TIMESTAMPTZ, -- When user left the chat
-    is_active BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ,

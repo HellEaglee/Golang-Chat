@@ -27,7 +27,6 @@ type ChatParticipant struct {
 	Role      string
 	JoinedAt  time.Time
 	LeftAt    *time.Time
-	IsActive  bool
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt
