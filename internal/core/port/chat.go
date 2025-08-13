@@ -22,4 +22,18 @@ type ChatRepository interface {
 	DeleteChatParticipant(ctx context.Context, chatID, userID string) error
 }
 
-type ChatService interface{}
+type ChatService interface {
+	// Chats
+	CreateChat(ctx context.Context, chat *domain.Chat) (*domain.Chat, error)
+	GetChatByID(ctx context.Context, id string) (*domain.Chat, error)
+	GetChatsByUserID(ctx context.Context, id string) ([]domain.Chat, error)
+	GetChats(ctx context.Context, skip uint64, limit uint64) ([]domain.Chat, error)
+	UpdateChat(ctx context.Context, chat *domain.Chat) (*domain.Chat, error)
+	DeleteChat(ctx context.Context, id string) error
+	// ChatParticipants
+	CreateChatParticipant(ctx context.Context, chatParticipant *domain.ChatParticipant) (*domain.ChatParticipant, error)
+	GetChatParticipantByChatIDUserID(ctx context.Context, chatID, userID string) (*domain.ChatParticipant, error)
+	GetChatParticipantsByChatID(ctx context.Context, id string) ([]domain.ChatParticipant, error)
+	UpdateChatParticipant(ctx context.Context, chatParticipant *domain.ChatParticipant) (*domain.ChatParticipant, error)
+	DeleteChatParticipant(ctx context.Context, chatID, userID string) error
+}
