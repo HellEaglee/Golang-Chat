@@ -1,0 +1,19 @@
+version: 3
+
+vars:
+  DSN: "{{.DB_CONNECTION}}://{{.DB_USER}}:{{.DB_PASSWORD}}@{{.DB_HOST}}:{{.DB_PORT}}/{{.DB_NAME}}?sslmode=disable"
+
+dotenv:
+  - ".env"
+
+tasks:
+  default:
+    desc: "Gettings started"
+    cmds:
+      - task: swag
+
+  swag:
+    desc: "Generate swagger documentation"
+    cmds:
+      - swag fmt
+      - swag init -g ./cmd/http/main.go -o ./docs --parseInternal true
