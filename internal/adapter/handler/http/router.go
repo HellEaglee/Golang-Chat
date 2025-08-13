@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/config"
+	"github.com/HellEaglee/Golang-Chat/internal/core/port"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	sloggin "github.com/samber/slog-gin"
@@ -16,7 +17,9 @@ type Router struct {
 	*gin.Engine
 }
 
-func NewRouter(config *config.HTTP, authHandler AuthHandler, userHandler UserHandler) (*Router, error) {
+func NewRouter(config *config.HTTP,
+	token port.TokenService, authHandler AuthHandler, userHandler UserHandler,
+) (*Router, error) {
 	if config.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -25,6 +28,7 @@ func NewRouter(config *config.HTTP, authHandler AuthHandler, userHandler UserHan
 	allowedOrigins := config.AllowedOrigins
 	originList := strings.Split(allowedOrigins, ",")
 	ginConfig.AllowOrigins = originList
+	ginConfig.AllowCredentials = true
 
 	router := gin.New()
 	router.Use(sloggin.New(slog.Default()), gin.Recovery(), cors.New(ginConfig))
@@ -35,10 +39,11 @@ func NewRouter(config *config.HTTP, authHandler AuthHandler, userHandler UserHan
 		auth := v1.Group("/auth")
 		{
 			auth.POST("/login", authHandler.Login)
+			auth.GET("/logout", authHandler.Logout)
 			auth.POST("/register", authHandler.Register)
-			auth.POST("/refresh", authHandler.Refresh)
 		}
 		users := v1.Group("/users")
+		users.Use(authMiddleWare(token))
 		{
 			users.POST("/", userHandler.CreateUser)
 			users.GET("/", userHandler.GetUsers)

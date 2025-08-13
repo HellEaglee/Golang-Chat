@@ -22,13 +22,13 @@ type authRequest struct {
 
 // Login godoc
 //
-//	@Summary		Login and get access/refresh tokens
-//	@Description	Logs in a registered user and returns access/refresh tokens if the credentials are valid.
+//	@Summary		Login and get cookies
+//	@Description	Logs in a registered user and returns cookies if the credentials are valid.
 //	@Tags			Auth
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body		authRequest	true	"Login request body"
-//	@Success		200		{object}	authResponse	"Succesfully logged in"
+//	@Param			request	body		authRequest		true	"Login request body"
+//	@Success		200		{object}	authResponse	"Login successful"
 //	@Failure		400		{object}	errorResponse	"Validation error"
 //	@Failure		401		{object}	errorResponse	"Unauthorized error"
 //	@Failure		500		{object}	errorResponse	"Internal server error"
@@ -46,7 +46,27 @@ func (handler *AuthHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	rsp := newAuthResponse(accessToken, refreshToken)
+	setAuthCookies(ctx, accessToken, refreshToken)
+	rsp := newAuthResponse("Login successful")
+
+	handleSuccess(ctx, rsp)
+}
+
+// Logout godoc
+//
+//	@Summary		Logout
+//	@Description	Logs out a registered user and returns access/refresh tokens if the credentials are valid.
+//	@Tags			Auth
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	authResponse	"Logout successful"
+//	@Failure		400	{object}	errorResponse	"Validation error"
+//	@Failure		401	{object}	errorResponse	"Unauthorized error"
+//	@Failure		500	{object}	errorResponse	"Internal server error"
+//	@Router			/auth/logout [get]
+func (handler *AuthHandler) Logout(ctx *gin.Context) {
+	clearAuthCookies(ctx)
+	rsp := newAuthResponse("Logout successful")
 
 	handleSuccess(ctx, rsp)
 }
@@ -58,8 +78,8 @@ func (handler *AuthHandler) Login(ctx *gin.Context) {
 //	@Tags			Auth
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body		authRequest	true	"Register request body"
-//	@Success		200		{object}	authResponse	"Succesfully logged in"
+//	@Param			request	body		authRequest		true	"Register request body"
+//	@Success		200		{object}	authResponse	"Register successful"
 //	@Failure		400		{object}	errorResponse	"Validation error"
 //	@Failure		401		{object}	errorResponse	"Unauthorized error"
 //	@Failure		500		{object}	errorResponse	"Internal server error"
@@ -83,43 +103,8 @@ func (handler *AuthHandler) Register(ctx *gin.Context) {
 		return
 	}
 
-	rsp := newAuthResponse(accessToken, refreshToken)
-
-	handleSuccess(ctx, rsp)
-}
-
-type refreshRequest struct {
-	AccessToken  string `json:"accessToken" binding:"required" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZWJhM2FhMjktNDQ1Yy00ODkyLWEwYmMtY2RmZDUxZWI2MDU2IiwiaXNzIjoiZ29sYW5nLWNoYXQiLCJleHAiOjE3NTQ5MDYxODksIm5iZiI6MTc1NDkwNTI4OSwiaWF0IjoxNzU0OTA1Mjg5LCJqdGkiOiI2Njg3N2Y4OC05Y2Q5LTQ2NDItOWUxNi1jZTU0OTY3YzM0ZjkifQ.ogDWegqsVOuUjsuffpHXGhdibtMFPwYdtQBzcUNKvUk"`
-	RefreshToken string `json:"refreshToken" binding:"required" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZWJhM2FhMjktNDQ1Yy00ODkyLWEwYmMtY2RmZDUxZWI2MDU2IiwiaXNzIjoiZ29sYW5nLWNoYXQiLCJleHAiOjE3NTQ5MDYxODksIm5iZiI6MTc1NDkwNTI4OSwiaWF0IjoxNzU0OTA1Mjg5LCJqdGkiOiI2Njg3N2Y4OC05Y2Q5LTQ2NDItOWUxNi1jZTU0OTY3YzM0ZjkifQ.ogDWegqsVOuUjsuffpHXGhdibtMFPwYdtQBzcUNKvUk"`
-}
-
-// Refresh godoc
-//
-//	@Summary		Refresh tokens
-//	@Description	Refresh tokens if old are valid
-//	@Tags			Auth
-//	@Accept			json
-//	@Produce		json
-//	@Param			request	body		refreshRequest	true	"Refresh tokens"
-//	@Success		200		{object}	authResponse	"Succesfully logged in"
-//	@Failure		400		{object}	errorResponse	"Validation error"
-//	@Failure		401		{object}	errorResponse	"Unauthorized error"
-//	@Failure		500		{object}	errorResponse	"Internal server error"
-//	@Router			/auth/refresh [post]
-func (handler *AuthHandler) Refresh(ctx *gin.Context) {
-	var req refreshRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		validationError(ctx, err)
-		return
-	}
-
-	accessToken, refreshToken, err := handler.service.RefreshTokens(ctx, req.AccessToken, req.RefreshToken)
-	if err != nil {
-		handleError(ctx, err)
-		return
-	}
-
-	rsp := newAuthResponse(accessToken, refreshToken)
+	setAuthCookies(ctx, accessToken, refreshToken)
+	rsp := newAuthResponse("Register successful")
 
 	handleSuccess(ctx, rsp)
 }

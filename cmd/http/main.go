@@ -23,11 +23,22 @@ func init() {
 
 // @title			Golang Chat API
 // @version		1.0
-// @description	This is a chat application API.
+// @description	This is a chat application API with cookie-based authentication.
 // @termsOfService	http://swagger.io/terms/
 //
 // @host			localhost:8080
 // @BasePath		/v1
+//
+// @securityDefinitions.apikey	CookieAuth
+// @in							cookie
+// @name						access_token
+// @description				Authentication is handled via httpOnly cookies. Login to set cookies automatically.
+//
+// @tag.name	Auth
+// @tag.description	Authentication endpoints
+//
+// @tag.name	Users
+// @tag.description	User management endpoints
 func main() {
 	config, err := config.New()
 	if err != nil {
@@ -68,6 +79,7 @@ func main() {
 
 	router, err := httphandler.NewRouter(
 		config.HTTP,
+		token,
 		*authHandler,
 		*userHandler,
 	)

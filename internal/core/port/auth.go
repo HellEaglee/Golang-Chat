@@ -18,11 +18,11 @@ type TokenService interface {
 	VerifyToken(token string) (*domain.TokenPayload, error)
 	VerifyRefreshToken(ctx context.Context, tokenString string) (*domain.TokenPayload, error)
 	ExtractTokenID(tokenString string) (string, error)
+	RefreshTokens(ctx context.Context, oldAccessToken, oldRefreshToken string) (accessToken, refreshToken string, err error)
 	RevokeToken(ctx context.Context, tokenID string) error
 }
 
 type AuthService interface {
 	Login(ctx context.Context, email, password string) (accessToken, refreshToken string, err error)
 	Register(ctx context.Context, user *domain.User) (accessToken, refreshToken string, err error)
-	RefreshTokens(ctx context.Context, oldAccessToken, oldRefreshToken string) (accessToken, refreshToken string, err error)
 }

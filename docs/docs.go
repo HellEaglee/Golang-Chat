@@ -18,7 +18,7 @@ const docTemplate = `{
     "paths": {
         "/auth/login": {
             "post": {
-                "description": "Logs in a registered user and returns access/refresh tokens if the credentials are valid.",
+                "description": "Logs in a registered user and returns cookies if the credentials are valid.",
                 "consumes": [
                     "application/json"
                 ],
@@ -28,7 +28,7 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Login and get access/refresh tokens",
+                "summary": "Login and get cookies",
                 "parameters": [
                     {
                         "description": "Login request body",
@@ -42,7 +42,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Succesfully logged in",
+                        "description": "Login successful",
                         "schema": {
                             "$ref": "#/definitions/httphandler.authResponse"
                         }
@@ -68,9 +68,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/refresh": {
-            "post": {
-                "description": "Refresh tokens if old are valid",
+        "/auth/logout": {
+            "get": {
+                "description": "Logs out a registered user and returns access/refresh tokens if the credentials are valid.",
                 "consumes": [
                     "application/json"
                 ],
@@ -80,21 +80,10 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Refresh tokens",
-                "parameters": [
-                    {
-                        "description": "Refresh tokens",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/httphandler.refreshRequest"
-                        }
-                    }
-                ],
+                "summary": "Logout",
                 "responses": {
                     "200": {
-                        "description": "Succesfully logged in",
+                        "description": "Logout successful",
                         "schema": {
                             "$ref": "#/definitions/httphandler.authResponse"
                         }
@@ -146,7 +135,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Succesfully logged in",
+                        "description": "Register successful",
                         "schema": {
                             "$ref": "#/definitions/httphandler.authResponse"
                         }
@@ -490,13 +479,8 @@ const docTemplate = `{
         "httphandler.authResponse": {
             "type": "object",
             "properties": {
-                "accessToken": {
-                    "type": "string",
-                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZWJhM2FhMjktNDQ1Yy00ODkyLWEwYmMtY2RmZDUxZWI2MDU2IiwiaXNzIjoiZ29sYW5nLWNoYXQiLCJleHAiOjE3NTQ5MDYxODksIm5iZiI6MTc1NDkwNTI4OSwiaWF0IjoxNzU0OTA1Mjg5LCJqdGkiOiI2Njg3N2Y4OC05Y2Q5LTQ2NDItOWUxNi1jZTU0OTY3YzM0ZjkifQ.ogDWegqsVOuUjsuffpHXGhdibtMFPwYdtQBzcUNKvUk"
-                },
-                "refreshToken": {
-                    "type": "string",
-                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZWJhM2FhMjktNDQ1Yy00ODkyLWEwYmMtY2RmZDUxZWI2MDU2IiwiaXNzIjoiZ29sYW5nLWNoYXQiLCJleHAiOjE3NTQ5MDYxODksIm5iZiI6MTc1NDkwNTI4OSwiaWF0IjoxNzU0OTA1Mjg5LCJqdGkiOiI2Njg3N2Y4OC05Y2Q5LTQ2NDItOWUxNi1jZTU0OTY3YzM0ZjkifQ.ogDWegqsVOuUjsuffpHXGhdibtMFPwYdtQBzcUNKvUk"
+                "message": {
+                    "type": "string"
                 }
             }
         },
@@ -551,23 +535,6 @@ const docTemplate = `{
                 "total": {
                     "type": "integer",
                     "example": 100
-                }
-            }
-        },
-        "httphandler.refreshRequest": {
-            "type": "object",
-            "required": [
-                "accessToken",
-                "refreshToken"
-            ],
-            "properties": {
-                "accessToken": {
-                    "type": "string",
-                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZWJhM2FhMjktNDQ1Yy00ODkyLWEwYmMtY2RmZDUxZWI2MDU2IiwiaXNzIjoiZ29sYW5nLWNoYXQiLCJleHAiOjE3NTQ5MDYxODksIm5iZiI6MTc1NDkwNTI4OSwiaWF0IjoxNzU0OTA1Mjg5LCJqdGkiOiI2Njg3N2Y4OC05Y2Q5LTQ2NDItOWUxNi1jZTU0OTY3YzM0ZjkifQ.ogDWegqsVOuUjsuffpHXGhdibtMFPwYdtQBzcUNKvUk"
-                },
-                "refreshToken": {
-                    "type": "string",
-                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZWJhM2FhMjktNDQ1Yy00ODkyLWEwYmMtY2RmZDUxZWI2MDU2IiwiaXNzIjoiZ29sYW5nLWNoYXQiLCJleHAiOjE3NTQ5MDYxODksIm5iZiI6MTc1NDkwNTI4OSwiaWF0IjoxNzU0OTA1Mjg5LCJqdGkiOiI2Njg3N2Y4OC05Y2Q5LTQ2NDItOWUxNi1jZTU0OTY3YzM0ZjkifQ.ogDWegqsVOuUjsuffpHXGhdibtMFPwYdtQBzcUNKvUk"
                 }
             }
         },
@@ -629,6 +596,14 @@ const docTemplate = `{
                 }
             }
         }
+    },
+    "securityDefinitions": {
+        "CookieAuth": {
+            "description": "Authentication is handled via httpOnly cookies. Login to set cookies automatically.",
+            "type": "apiKey",
+            "name": "access_token",
+            "in": "cookie"
+        }
     }
 }`
 
@@ -639,7 +614,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/v1",
 	Schemes:          []string{},
 	Title:            "Golang Chat API",
-	Description:      "This is a chat application API.",
+	Description:      "This is a chat application API with cookie-based authentication.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

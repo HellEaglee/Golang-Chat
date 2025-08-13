@@ -191,3 +191,41 @@ func (t *JWTToken) ExtractTokenID(tokenString string) (string, error) {
 func (t *JWTToken) RevokeToken(ctx context.Context, tokenID string) error {
 	return t.tr.RevokeToken(ctx, tokenID)
 }
+
+func (t *JWTToken) RefreshTokens(ctx context.Context, oldAccessToken, oldRefreshToken string) (accessToken, refreshToken string, err error) {
+	_, err = t.VerifyToken(oldAccessToken)
+	if err != nil {
+		return "", "", err
+	}
+
+	payload, err := t.VerifyRefreshToken(ctx, oldRefreshToken)
+	if err != nil {
+		return "", "", err
+	}
+
+	tokenID, err := t.ExtractTokenID(oldRefreshToken)
+	if err != nil {
+		return "", "", err
+	}
+
+	user := &domain.User{
+		ID: payload.UserID,
+	}
+
+	newAccessToken, err := t.CreateToken(user)
+	if err != nil {
+		return "", "", err
+	}
+
+	newRefreshToken, err := t.CreateRefreshToken(ctx, user)
+	if err != nil {
+		return "", "", err
+	}
+
+	err = t.RevokeToken(ctx, tokenID)
+	if err != nil {
+		return "", "", err
+	}
+
+	return newAccessToken, newRefreshToken, nil
+}
