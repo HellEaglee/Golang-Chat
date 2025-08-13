@@ -46,6 +46,7 @@ func NewRouter(config *config.HTTP,
 		users.Use(authMiddleWare(token))
 		{
 			users.POST("/", userHandler.CreateUser)
+			users.GET("/profile", userHandler.GetProfile)
 			users.GET("/", userHandler.GetUsers)
 			users.GET("/:id", userHandler.GetUser)
 			users.PUT("/:id", userHandler.UpdateUser)

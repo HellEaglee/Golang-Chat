@@ -10,6 +10,7 @@ import (
 
 type UserService struct {
 	repo port.UserRepository
+	ts   port.TokenService
 }
 
 func NewUserService(repo port.UserRepository) *UserService {

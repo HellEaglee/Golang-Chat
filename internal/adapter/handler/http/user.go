@@ -1,10 +1,12 @@
 package httphandler
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/HellEaglee/Golang-Chat/internal/core/domain"
 	"github.com/HellEaglee/Golang-Chat/internal/core/port"
+	"github.com/HellEaglee/Golang-Chat/internal/core/util"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -85,6 +87,41 @@ func (handler *UserHandler) GetUser(ctx *gin.Context) {
 	}
 
 	user, err := handler.service.GetUser(ctx.Request.Context(), req.ID)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+
+	rsp := newUserResponse(user)
+
+	handleSuccess(ctx, rsp)
+}
+
+// GetProfile godoc
+//
+//	@Summary		Get profile data by ID
+//	@Description	Get profile data by its UUID
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	userResponse	"Profile found"
+//	@Failure		400	{object}	errorResponse	"Validation error"
+//	@Failure		404	{object}	errorResponse	"Data not found error"
+//	@Failure		500	{object}	errorResponse	"Internal server error"
+//	@Router			/users/profile [get]
+func (handler *UserHandler) GetProfile(ctx *gin.Context) {
+	userIDI, exists := ctx.Get("user_id")
+	if !exists {
+		handleError(ctx, util.ErrForbidden)
+		return
+	}
+
+	userID, ok := userIDI.(uuid.UUID)
+	if !ok {
+		handleError(ctx, fmt.Errorf("invalid user id format"))
+		return
+	}
+	user, err := handler.service.GetUser(ctx.Request.Context(), userID.String())
 	if err != nil {
 		handleError(ctx, err)
 		return

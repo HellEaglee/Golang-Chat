@@ -400,6 +400,33 @@ paths:
       summary: Update an user
       tags:
       - Users
+  /users/profile:
+    get:
+      consumes:
+      - application/json
+      description: Get profile data by its UUID
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile found
+          schema:
+            $ref: '#/definitions/httphandler.userResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "404":
+          description: Data not found error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httphandler.errorResponse'
+      summary: Get profile data by ID
+      tags:
+      - Users
 securityDefinitions:
   CookieAuth:
     description: Authentication is handled via httpOnly cookies. Login to set cookies
