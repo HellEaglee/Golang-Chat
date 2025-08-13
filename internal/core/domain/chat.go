@@ -8,12 +8,14 @@ import (
 )
 
 type Chat struct {
-	ID        uuid.UUID
-	Name      *string
-	IsGroup   bool
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt
+	ID            uuid.UUID
+	Name          *string
+	IsGroup       bool
+	LastMessage   string
+	LastMessageAt time.Time
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	DeletedAt     gorm.DeletedAt
 
 	Participants []ChatParticipant
 	Messages     []Message

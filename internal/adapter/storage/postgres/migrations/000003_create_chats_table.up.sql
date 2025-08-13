@@ -2,6 +2,8 @@ CREATE TABLE IF NOT EXISTS chats (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(100), -- Optional chat name (for group chats)
     is_group BOOLEAN NOT NULL DEFAULT false, -- true for group chats, false for direct messages
+    last_message TEXT,
+    last_message_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
