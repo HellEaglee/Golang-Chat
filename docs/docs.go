@@ -16,6 +16,47 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/csrf-token": {
+            "get": {
+                "description": "Get csrf token if the credentials are valid.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "CSRF",
+                "responses": {
+                    "200": {
+                        "description": "some token",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.csrfResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httphandler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Logs in a registered user and returns cookies if the credentials are valid.",
@@ -540,6 +581,14 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 8,
                     "example": "12345678"
+                }
+            }
+        },
+        "httphandler.csrfResponse": {
+            "type": "object",
+            "properties": {
+                "csrf_token": {
+                    "type": "string"
                 }
             }
         },

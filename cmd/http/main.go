@@ -57,6 +57,8 @@ func main() {
 	}
 
 	// DI
+	csrf := service.NewCSRFService()
+
 	tokenRepo := repository.NewTokenRepository(db)
 	token, err := jwt.New(config.Token, tokenRepo)
 	if err != nil {
@@ -69,11 +71,12 @@ func main() {
 	userHandler := httphandler.NewUserHandler(userService)
 
 	authService := service.NewAuthService(userRepo, token)
-	authHandler := httphandler.NewAuthHandler(authService)
+	authHandler := httphandler.NewAuthHandler(authService, csrf)
 
 	router, err := httphandler.NewRouter(
 		config.HTTP,
 		token,
+		csrf,
 		*authHandler,
 		*userHandler,
 	)

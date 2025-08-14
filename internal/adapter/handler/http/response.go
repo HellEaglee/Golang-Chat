@@ -77,6 +77,14 @@ type userResponse struct {
 	UpdatedAt time.Time `json:"updated_at" example:"1970-01-01T00:00:00Z"`
 }
 
+type csrfResponse struct {
+	CSRFToken string `json:"csrf_token"`
+}
+
+func newCSRFResponse(message string) csrfResponse {
+	return csrfResponse{CSRFToken: message}
+}
+
 // newPostResponse is a helper function to create a response body for handling post data
 func newUserResponse(user *domain.User) userResponse {
 	return userResponse{

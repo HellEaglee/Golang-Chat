@@ -18,7 +18,7 @@ type Router struct {
 }
 
 func NewRouter(config *config.HTTP,
-	token port.TokenService, authHandler AuthHandler, userHandler UserHandler,
+	token port.TokenService, csrf port.CSRFService, authHandler AuthHandler, userHandler UserHandler,
 ) (*Router, error) {
 	if config.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -41,9 +41,10 @@ func NewRouter(config *config.HTTP,
 			auth.POST("/login", authHandler.Login)
 			auth.GET("/logout", authHandler.Logout)
 			auth.POST("/register", authHandler.Register)
+			auth.GET("/csrf-token", authHandler.GetCSRFToken)
 		}
 		users := v1.Group("/users")
-		users.Use(authMiddleWare(token))
+		users.Use(authMiddleWare(token, csrf))
 		{
 			users.POST("/", userHandler.CreateUser)
 			users.GET("/profile", userHandler.GetProfile)

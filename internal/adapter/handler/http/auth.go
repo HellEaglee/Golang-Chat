@@ -3,16 +3,18 @@ package httphandler
 import (
 	"github.com/HellEaglee/Golang-Chat/internal/core/domain"
 	"github.com/HellEaglee/Golang-Chat/internal/core/port"
+	"github.com/HellEaglee/Golang-Chat/internal/core/util"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type AuthHandler struct {
 	service port.AuthService
+	csrf    port.CSRFService
 }
 
-func NewAuthHandler(service port.AuthService) *AuthHandler {
-	return &AuthHandler{service: service}
+func NewAuthHandler(service port.AuthService, csrf port.CSRFService) *AuthHandler {
+	return &AuthHandler{service: service, csrf: csrf}
 }
 
 type authRequest struct {
@@ -106,5 +108,37 @@ func (handler *AuthHandler) Register(ctx *gin.Context) {
 	setAuthCookies(ctx, accessToken, refreshToken)
 	rsp := newAuthResponse("Register successful")
 
+	handleSuccess(ctx, rsp)
+}
+
+// CSRF godoc
+//
+//	@Summary		CSRF
+//	@Description	Get csrf token if the credentials are valid.
+//	@Tags			Auth
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	csrfResponse	"some token"
+//	@Failure		400	{object}	errorResponse	"Validation error"
+//	@Failure		401	{object}	errorResponse	"Unauthorized error"
+//	@Failure		500	{object}	errorResponse	"Internal server error"
+//	@Router			/auth/csrf-token [get]
+func (handler *AuthHandler) GetCSRFToken(ctx *gin.Context) {
+	csrfToken, err := handler.csrf.GenerateToken()
+	if err != nil {
+		handleError(ctx, util.ErrInternal)
+		return
+	}
+
+	ctx.SetCookie(
+		"csrf_token",
+		csrfToken,
+		3600,
+		"/",
+		"",
+		false,
+		true,
+	)
+	rsp := newCSRFResponse(csrfToken)
 	handleSuccess(ctx, rsp)
 }
