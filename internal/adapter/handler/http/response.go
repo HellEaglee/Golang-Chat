@@ -12,22 +12,32 @@ import (
 	"github.com/google/uuid"
 )
 
-// errorStatusMap is a map of defined error messages and their corresponding http status codes
 var errorStatusMap = map[error]int{
-	util.ErrInternal:                   http.StatusInternalServerError,
-	util.ErrDataNotFound:               http.StatusNotFound,
-	util.ErrConflictingData:            http.StatusConflict,
+	// Server codes - 5XX
+	util.ErrInternal:             http.StatusInternalServerError,
+	util.ErrAccessTokenDuration:  http.StatusInternalServerError,
+	util.ErrRefreshTokenDuration: http.StatusInternalServerError,
+	util.ErrAccessTokenCreation:  http.StatusInternalServerError,
+	util.ErrRefreshTokenCreation: http.StatusInternalServerError,
+
+	// Client codes - 4XX
+	util.ErrSessionRevoked:  http.StatusGone,
+	util.ErrConflictingData: http.StatusConflict,
+	util.ErrDataNotFound:    http.StatusNotFound,
+	util.ErrNoUpdatedData:   http.StatusBadRequest,
+
+	// Authentication & Authorization code - 401/403
 	util.ErrInvalidCredentials:         http.StatusUnauthorized,
 	util.ErrUnauthorized:               http.StatusUnauthorized,
 	util.ErrEmptyAuthorizationHeader:   http.StatusUnauthorized,
 	util.ErrInvalidAuthorizationHeader: http.StatusUnauthorized,
 	util.ErrInvalidAuthorizationType:   http.StatusUnauthorized,
 	util.ErrInvalidAccessToken:         http.StatusUnauthorized,
+	util.ErrInvalidRefreshToken:        http.StatusUnauthorized,
 	util.ErrExpiredAccessToken:         http.StatusUnauthorized,
+	util.ErrExpiredRefreshToken:        http.StatusUnauthorized,
+	util.ErrInvalidSession:             http.StatusUnauthorized,
 	util.ErrForbidden:                  http.StatusForbidden,
-	util.ErrNoUpdatedData:              http.StatusBadRequest,
-	util.ErrInsufficientStock:          http.StatusBadRequest,
-	util.ErrInsufficientPayment:        http.StatusBadRequest,
 }
 
 type response struct {
@@ -36,7 +46,6 @@ type response struct {
 	Data    any    `json:"data,omitempty"`
 }
 
-// newResponse is a helper function to create a response body
 func newResponse(success bool, message string, data any) response {
 	return response{
 		Success: success,
@@ -45,14 +54,12 @@ func newResponse(success bool, message string, data any) response {
 	}
 }
 
-// meta represents metadata for a paginated response
 type meta struct {
 	Total uint64 `json:"total" example:"100"`
 	Limit uint64 `json:"limit" example:"10"`
 	Skip  uint64 `json:"skip" example:"0"`
 }
 
-// newMeta is a helper function to create metadata for a paginated response
 func newMeta(total, limit, skip uint64) meta {
 	return meta{
 		Total: total,
@@ -85,7 +92,6 @@ func newCSRFResponse(message string) csrfResponse {
 	return csrfResponse{CSRFToken: message}
 }
 
-// newPostResponse is a helper function to create a response body for handling post data
 func newUserResponse(user *domain.User) userResponse {
 	return userResponse{
 		ID:        user.ID,
@@ -96,14 +102,12 @@ func newUserResponse(user *domain.User) userResponse {
 	}
 }
 
-// validationError sends an error response for some specific request validation error
 func validationError(ctx *gin.Context, err error) {
 	errMsgs := parseError(err)
 	errRsp := newErrorResponse(errMsgs)
 	ctx.JSON(http.StatusBadRequest, errRsp)
 }
 
-// handleError determines the status code of an error and returns a JSON response with the error message and status code
 func handleError(ctx *gin.Context, err error) {
 	statusCode, ok := errorStatusMap[err]
 	if !ok {
@@ -115,7 +119,6 @@ func handleError(ctx *gin.Context, err error) {
 	ctx.JSON(statusCode, errRsp)
 }
 
-// handleAbort sends an error response and aborts the request with the specified status code and error message
 func handleAbort(ctx *gin.Context, err error) {
 	statusCode, ok := errorStatusMap[err]
 	if !ok {
@@ -127,7 +130,6 @@ func handleAbort(ctx *gin.Context, err error) {
 	ctx.AbortWithStatusJSON(statusCode, errRsp)
 }
 
-// parseError parses error messages from the error object and returns a slice of error messages
 func parseError(err error) []string {
 	var errMsgs []string
 
@@ -142,13 +144,11 @@ func parseError(err error) []string {
 	return errMsgs
 }
 
-// errorResponse represents an error response body format
 type errorResponse struct {
 	Success  bool     `json:"success" example:"false"`
 	Messages []string `json:"messages" example:"Error message 1, Error message 2"`
 }
 
-// newErrorResponse is a helper function to create an error response body
 func newErrorResponse(errMsgs []string) errorResponse {
 	return errorResponse{
 		Success:  false,
@@ -156,7 +156,6 @@ func newErrorResponse(errMsgs []string) errorResponse {
 	}
 }
 
-// handleSuccess sends a success response with the specified status code and optional data
 func handleSuccess(ctx *gin.Context, data any) {
 	rsp := newResponse(true, "Success", data)
 	ctx.JSON(http.StatusOK, rsp)
