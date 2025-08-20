@@ -1,49 +1,59 @@
 package httphandler
 
 import (
-	"fmt"
-	"net/http"
+	"errors"
+	"time"
 
+	"github.com/HellEaglee/Golang-Chat/internal/adapter/config"
 	"github.com/HellEaglee/Golang-Chat/internal/core/port"
 	"github.com/HellEaglee/Golang-Chat/internal/core/util"
 	"github.com/gin-gonic/gin"
 )
 
-func authMiddleWare(s port.TokenService, csrf port.CSRFService) gin.HandlerFunc {
+func authMiddleWare(s port.TokenService, csrf port.CSRFService, config *config.Token) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		if !verifyCSRFToken(ctx, csrf) {
-			ctx.JSON(http.StatusForbidden, gin.H{"error": "CSRF token validation failed"})
-			ctx.Abort()
+		duration, err := time.ParseDuration(config.Duration)
+		if err != nil {
+			handleAbort(ctx, err)
 			return
 		}
+		// if !verifyCSRFToken(ctx, csrf) {
+		// 	ctx.JSON(http.StatusForbidden, gin.H{"error": "CSRF token validation failed"})
+		// 	ctx.Abort()
+		// 	return
+		// }
 
 		accessToken, err := ctx.Cookie("access_token")
 		if err != nil {
-			handleAbort(ctx, err)
+			handleAbort(ctx, util.ErrInvalidAccessToken)
 			return
 		}
 
 		payload, err := s.VerifyToken(accessToken)
 		if err != nil {
-			if err == util.ErrExpiredAccessToken {
-				refreshToken, err := ctx.Cookie("refresh_token")
+			if errors.Is(err, util.ErrExpiredAccessToken) {
+				claims, err := s.ExtractClaimsFromToken(accessToken)
 				if err != nil {
 					handleAbort(ctx, err)
 					return
 				}
-				_, err = s.VerifyRefreshToken(ctx, refreshToken)
+				refreshToken, err := s.GetTokenBySessionID(ctx, claims.SessionID)
+				if err != nil {
+					handleAbort(ctx, err)
+					return
+				}
+				_, err = s.VerifyRefreshToken(ctx, refreshToken.Token)
 				if err != nil {
 					handleAbort(ctx, err)
 					return
 				}
 
-				newAccessToken, newRefreshToken, err := s.RefreshTokens(ctx, accessToken, refreshToken)
+				newAccessToken, err := s.RefreshTokens(ctx, accessToken, refreshToken.Token)
 				if err != nil {
 					handleAbort(ctx, err)
 					return
 				}
-				fmt.Printf("refreshed token")
-				setAuthCookies(ctx, newAccessToken, newRefreshToken)
+				setAuthCookies(ctx, newAccessToken, duration)
 
 				payload, err = s.VerifyToken(newAccessToken)
 				if err != nil {

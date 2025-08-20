@@ -71,10 +71,11 @@ func main() {
 	userHandler := httphandler.NewUserHandler(userService)
 
 	authService := service.NewAuthService(userRepo, token)
-	authHandler := httphandler.NewAuthHandler(authService, csrf)
+	authHandler := httphandler.NewAuthHandler(config.Token, authService, csrf)
 
 	router, err := httphandler.NewRouter(
 		config.HTTP,
+		config.Token,
 		token,
 		csrf,
 		*authHandler,

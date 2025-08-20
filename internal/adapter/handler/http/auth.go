@@ -1,6 +1,9 @@
 package httphandler
 
 import (
+	"time"
+
+	"github.com/HellEaglee/Golang-Chat/internal/adapter/config"
 	"github.com/HellEaglee/Golang-Chat/internal/core/domain"
 	"github.com/HellEaglee/Golang-Chat/internal/core/port"
 	"github.com/HellEaglee/Golang-Chat/internal/core/util"
@@ -9,12 +12,17 @@ import (
 )
 
 type AuthHandler struct {
-	service port.AuthService
-	csrf    port.CSRFService
+	service  port.AuthService
+	csrf     port.CSRFService
+	duration time.Duration
 }
 
-func NewAuthHandler(service port.AuthService, csrf port.CSRFService) *AuthHandler {
-	return &AuthHandler{service: service, csrf: csrf}
+func NewAuthHandler(config *config.Token, service port.AuthService, csrf port.CSRFService) *AuthHandler {
+	duration, err := time.ParseDuration(config.Duration)
+	if err != nil {
+		return nil
+	}
+	return &AuthHandler{service: service, csrf: csrf, duration: duration}
 }
 
 type authRequest struct {
@@ -42,13 +50,13 @@ func (handler *AuthHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, refreshToken, err := handler.service.Login(ctx, req.Email, req.Password)
+	accessToken, err := handler.service.Login(ctx, req.Email, req.Password)
 	if err != nil {
 		handleError(ctx, err)
 		return
 	}
 
-	setAuthCookies(ctx, accessToken, refreshToken)
+	setAuthCookies(ctx, accessToken, handler.duration)
 	rsp := newAuthResponse("Login successful")
 
 	handleSuccess(ctx, rsp)
@@ -99,13 +107,13 @@ func (handler *AuthHandler) Register(ctx *gin.Context) {
 		Password: req.Password,
 	}
 
-	accessToken, refreshToken, err := handler.service.Register(ctx, user)
+	accessToken, err := handler.service.Register(ctx, user)
 	if err != nil {
 		handleError(ctx, err)
 		return
 	}
 
-	setAuthCookies(ctx, accessToken, refreshToken)
+	setAuthCookies(ctx, accessToken, handler.duration)
 	rsp := newAuthResponse("Register successful")
 
 	handleSuccess(ctx, rsp)

@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"time"
 
@@ -19,11 +20,6 @@ type JWTToken struct {
 	refreshSecretKey []byte
 	refreshDuration  time.Duration
 	tr               port.TokenRepository
-}
-
-type TokenClaims struct {
-	UserID uuid.UUID `json:"user_id"`
-	jwt.RegisteredClaims
 }
 
 func New(config *config.Token, tokenRepo port.TokenRepository) (port.TokenService, error) {
@@ -49,7 +45,7 @@ func New(config *config.Token, tokenRepo port.TokenRepository) (port.TokenServic
 	}, nil
 }
 
-func (t *JWTToken) CreateToken(user *domain.User) (string, error) {
+func (t *JWTToken) CreateToken(userID string, sessionID string) (string, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {
 		return "", util.ErrInternal
@@ -57,8 +53,9 @@ func (t *JWTToken) CreateToken(user *domain.User) (string, error) {
 
 	issuedAt := time.Now()
 	expiredAt := issuedAt.Add(t.duration)
-	claims := TokenClaims{
-		UserID: user.ID,
+	claims := domain.TokenClaims{
+		UserID:    userID,
+		SessionID: sessionID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:        id.String(),
 			IssuedAt:  jwt.NewNumericDate(issuedAt),
@@ -77,29 +74,31 @@ func (t *JWTToken) CreateToken(user *domain.User) (string, error) {
 }
 
 func (t *JWTToken) VerifyToken(tokenString string) (*domain.TokenPayload, error) {
-	claims := &TokenClaims{}
+	claims := &domain.TokenClaims{}
 
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (any, error) {
 		return t.secretKey, nil
 	})
 	if err != nil {
-		if err.Error() == "Token is expired" || err.Error() == "token is expired" || strings.Contains(err.Error(), "expired") {
+		if errors.Is(err, jwt.ErrTokenExpired) {
 			return nil, util.ErrExpiredAccessToken
 		}
+		return nil, util.ErrInvalidAccessToken
 	}
 	if !token.Valid {
 		return nil, util.ErrInvalidAccessToken
 	}
 
 	payload := &domain.TokenPayload{
-		ID:     uuid.MustParse(claims.RegisteredClaims.ID),
-		UserID: claims.UserID,
+		ID:        uuid.MustParse(claims.RegisteredClaims.ID),
+		UserID:    claims.UserID,
+		SessionID: claims.SessionID,
 	}
 
 	return payload, nil
 }
 
-func (t *JWTToken) CreateRefreshToken(ctx context.Context, user *domain.User) (string, error) {
+func (t *JWTToken) CreateRefreshToken(ctx context.Context, userID string, sessionID string) (string, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {
 		return "", util.ErrInternal
@@ -108,8 +107,9 @@ func (t *JWTToken) CreateRefreshToken(ctx context.Context, user *domain.User) (s
 	issuedAt := time.Now()
 	expiredAt := issuedAt.Add(t.refreshDuration)
 
-	claims := TokenClaims{
-		UserID: user.ID,
+	claims := domain.TokenClaims{
+		UserID:    userID,
+		SessionID: sessionID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:        id.String(),
 			IssuedAt:  jwt.NewNumericDate(issuedAt),
@@ -127,7 +127,8 @@ func (t *JWTToken) CreateRefreshToken(ctx context.Context, user *domain.User) (s
 
 	tokenEntity := &domain.Token{
 		ID:        id,
-		UserID:    user.ID,
+		UserID:    userID,
+		SessionID: sessionID,
 		Token:     tokenString,
 		ExpiresAt: expiredAt,
 	}
@@ -141,7 +142,7 @@ func (t *JWTToken) CreateRefreshToken(ctx context.Context, user *domain.User) (s
 }
 
 func (t *JWTToken) VerifyRefreshToken(ctx context.Context, tokenString string) (*domain.TokenPayload, error) {
-	claims := &TokenClaims{}
+	claims := &domain.TokenClaims{}
 
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (any, error) {
 		return t.refreshSecretKey, nil
@@ -158,16 +159,36 @@ func (t *JWTToken) VerifyRefreshToken(ctx context.Context, tokenString string) (
 	if err != nil {
 		return nil, util.ErrInvalidRefreshToken
 	}
+
+	if storenToken.SessionID != claims.SessionID {
+		return nil, util.ErrInvalidRefreshToken
+	}
+
 	if time.Now().After(storenToken.ExpiresAt) {
 		return nil, util.ErrExpiredRefreshToken
 	}
 
 	payload := &domain.TokenPayload{
-		ID:     uuid.MustParse(claims.RegisteredClaims.ID),
-		UserID: claims.UserID,
+		ID:        uuid.MustParse(claims.RegisteredClaims.ID),
+		UserID:    claims.UserID,
+		SessionID: claims.SessionID,
 	}
 
 	return payload, nil
+}
+
+func (t *JWTToken) ExtractClaimsFromToken(tokenString string) (*domain.TokenClaims, error) {
+	claims := &domain.TokenClaims{}
+
+	_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (any, error) {
+		return t.secretKey, nil
+	})
+
+	if err != nil && !errors.Is(err, jwt.ErrTokenExpired) {
+		return nil, util.ErrInvalidAccessToken
+	}
+
+	return claims, nil
 }
 
 func (t *JWTToken) ExtractTokenID(tokenString string) (string, error) {
@@ -188,44 +209,41 @@ func (t *JWTToken) ExtractTokenID(tokenString string) (string, error) {
 	return "", util.ErrInternal
 }
 
+func (t *JWTToken) GetTokenBySessionID(ctx context.Context, sessionID string) (*domain.Token, error) {
+	return t.tr.GetTokenBySessionID(ctx, sessionID)
+}
+
 func (t *JWTToken) RevokeToken(ctx context.Context, tokenID string) error {
 	return t.tr.RevokeToken(ctx, tokenID)
 }
 
-func (t *JWTToken) RefreshTokens(ctx context.Context, oldAccessToken, oldRefreshToken string) (accessToken, refreshToken string, err error) {
-	_, err = t.VerifyToken(oldAccessToken)
+func (t *JWTToken) RefreshTokens(ctx context.Context, oldAccessToken, refreshToken string) (accessToken string, err error) {
+	accessPayload, err := t.ExtractClaimsFromToken(oldAccessToken)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
-	payload, err := t.VerifyRefreshToken(ctx, oldRefreshToken)
+	refreshPayload, err := t.VerifyRefreshToken(ctx, refreshToken)
 	if err != nil {
-		return "", "", err
+		return "", err
+	}
+	if accessPayload.SessionID != refreshPayload.SessionID {
+		return "", util.ErrInvalidSession
 	}
 
-	tokenID, err := t.ExtractTokenID(oldRefreshToken)
+	newAccessToken, err := t.CreateToken(refreshPayload.UserID, refreshPayload.SessionID)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
-	user := &domain.User{
-		ID: payload.UserID,
-	}
-
-	newAccessToken, err := t.CreateToken(user)
+	err = t.RevokeToken(ctx, refreshPayload.ID.String())
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
-
-	newRefreshToken, err := t.CreateRefreshToken(ctx, user)
+	_, err = t.CreateRefreshToken(ctx, refreshPayload.UserID, refreshPayload.SessionID)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
-	err = t.RevokeToken(ctx, tokenID)
-	if err != nil {
-		return "", "", err
-	}
-
-	return newAccessToken, newRefreshToken, nil
+	return newAccessToken, nil
 }

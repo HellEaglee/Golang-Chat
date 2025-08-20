@@ -19,6 +19,7 @@ var (
 	ErrInvalidAccessToken         = errors.New("access token is invalid")
 	ErrExpiredRefreshToken        = errors.New("refresh token has expired")
 	ErrInvalidRefreshToken        = errors.New("refresh token is invalid")
+	ErrInvalidSession             = errors.New("invalid session id")
 	ErrInvalidCredentials         = errors.New("invalid email or password")
 	ErrEmptyAuthorizationHeader   = errors.New("authorization header is not provided")
 	ErrInvalidAuthorizationHeader = errors.New("authorization header format is invalid")

@@ -6,6 +6,7 @@ import (
 	"github.com/HellEaglee/Golang-Chat/internal/core/domain"
 	"github.com/HellEaglee/Golang-Chat/internal/core/port"
 	"github.com/HellEaglee/Golang-Chat/internal/core/util"
+	"github.com/google/uuid"
 )
 
 type AuthService struct {
@@ -19,56 +20,60 @@ func NewAuthService(repo port.UserRepository, ts port.TokenService) *AuthService
 	}
 }
 
-func (s *AuthService) Login(ctx context.Context, email, password string) (accessToken string, refreshToken string, err error) {
+func (s *AuthService) Login(ctx context.Context, email, password string) (accessToken string, err error) {
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		if err == util.ErrDataNotFound {
-			return "", "", util.ErrInvalidCredentials
+			return "", util.ErrInvalidCredentials
 		}
-		return "", "", util.ErrInternal
+		return "", util.ErrInternal
 	}
+
+	sessionID := uuid.New().String()
 
 	err = util.ComparePassword(password, user.Password)
 	if err != nil {
-		return "", "", util.ErrInvalidCredentials
+		return "", util.ErrInvalidCredentials
 	}
 
-	accessToken, err = s.ts.CreateToken(user)
+	accessToken, err = s.ts.CreateToken(user.ID.String(), sessionID)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
-	refreshToken, err = s.ts.CreateRefreshToken(ctx, user)
+	_, err = s.ts.CreateRefreshToken(ctx, user.ID.String(), sessionID)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
-	return accessToken, refreshToken, nil
+	return accessToken, nil
 }
 
-func (s *AuthService) Register(ctx context.Context, user *domain.User) (accessToken string, refreshToken string, err error) {
+func (s *AuthService) Register(ctx context.Context, user *domain.User) (accessToken string, err error) {
 	name := util.EmailToName(user.Email)
 	hashedPassword, err := util.HashPassword(user.Password)
 	if err != nil {
-		return "", "", util.ErrInternal
+		return "", util.ErrInternal
 	}
 
 	user.Password = hashedPassword
 	user.Name = name
 	newUser, err := s.repo.CreateUser(ctx, user)
 	if err != nil {
-		return "", "", util.ErrInternal
+		return "", util.ErrInternal
 	}
 
-	accessToken, err = s.ts.CreateToken(newUser)
+	sessionID := uuid.New().String()
+
+	accessToken, err = s.ts.CreateToken(newUser.ID.String(), sessionID)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
-	refreshToken, err = s.ts.CreateRefreshToken(ctx, newUser)
+	_, err = s.ts.CreateRefreshToken(ctx, newUser.ID.String(), sessionID)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
-	return accessToken, refreshToken, nil
+	return accessToken, nil
 }
