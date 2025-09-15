@@ -1,9 +1,11 @@
-package httphandler
+package http
 
 import (
 	"fmt"
 	"strconv"
 
+	"github.com/HellEaglee/Golang-Chat/internal/adapter/handler/response"
+	utilhandler "github.com/HellEaglee/Golang-Chat/internal/adapter/handler/util"
 	"github.com/HellEaglee/Golang-Chat/internal/core/domain"
 	"github.com/HellEaglee/Golang-Chat/internal/core/port"
 	"github.com/HellEaglee/Golang-Chat/internal/core/util"
@@ -31,18 +33,18 @@ type createUserRequest struct {
 //	@Tags			Users
 //	@Accept			json
 //	@Produce		json
-//	@Param			user	body		createUserRequest	true	"Create user request"
-//	@Success		201		{object}	userResponse		"User created"
-//	@Failure		400		{object}	errorResponse		"Validation error"
-//	@Failure		401		{object}	errorResponse		"Unauthorized error"
-//	@Failure		404		{object}	errorResponse		"Data not found error"
-//	@Failure		409		{object}	errorResponse		"Data conflict error"
-//	@Failure		500		{object}	errorResponse		"Internal server error"
+//	@Param			user	body		createUserRequest		true	"Create user request"
+//	@Success		201		{object}	response.UserResponse	"User created"
+//	@Failure		400		{object}	response.ErrorResponse	"Validation error"
+//	@Failure		401		{object}	response.ErrorResponse	"Unauthorized error"
+//	@Failure		404		{object}	response.ErrorResponse	"Data not found error"
+//	@Failure		409		{object}	response.ErrorResponse	"Data conflict error"
+//	@Failure		500		{object}	response.ErrorResponse	"Internal server error"
 //	@Router			/users [post]
 func (handler *UserHandler) CreateUser(ctx *gin.Context) {
 	var req createUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		validationError(ctx, err)
+		response.ValidationError(ctx, err)
 		return
 	}
 
@@ -54,12 +56,12 @@ func (handler *UserHandler) CreateUser(ctx *gin.Context) {
 
 	createdUser, err := handler.service.CreateUser(ctx.Request.Context(), user)
 	if err != nil {
-		handleError(ctx, err)
+		response.HandleError(ctx, err)
 		return
 	}
 
-	rsp := newUserResponse(createdUser)
-	handleSuccess(ctx, rsp)
+	rsp := response.NewUserResponse(createdUser)
+	response.HandleSuccess(ctx, rsp)
 }
 
 type getUserRequest struct {
@@ -73,28 +75,28 @@ type getUserRequest struct {
 //	@Tags			Users
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string			true	"User ID (UUID)"
-//	@Success		200	{object}	userResponse	"User found"
-//	@Failure		400	{object}	errorResponse	"Validation error"
-//	@Failure		404	{object}	errorResponse	"Data not found error"
-//	@Failure		500	{object}	errorResponse	"Internal server error"
+//	@Param			id	path		string					true	"User ID (UUID)"
+//	@Success		200	{object}	response.UserResponse	"User found"
+//	@Failure		400	{object}	response.ErrorResponse	"Validation error"
+//	@Failure		404	{object}	response.ErrorResponse	"Data not found error"
+//	@Failure		500	{object}	response.ErrorResponse	"Internal server error"
 //	@Router			/users/{id} [get]
 func (handler *UserHandler) GetUser(ctx *gin.Context) {
 	var req getUserRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
-		validationError(ctx, err)
+		response.ValidationError(ctx, err)
 		return
 	}
 
 	user, err := handler.service.GetUser(ctx.Request.Context(), req.ID)
 	if err != nil {
-		handleError(ctx, err)
+		response.HandleError(ctx, err)
 		return
 	}
 
-	rsp := newUserResponse(user)
+	rsp := response.NewUserResponse(user)
 
-	handleSuccess(ctx, rsp)
+	response.HandleSuccess(ctx, rsp)
 }
 
 // GetProfile godoc
@@ -104,32 +106,32 @@ func (handler *UserHandler) GetUser(ctx *gin.Context) {
 //	@Tags			Users
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	userResponse	"Profile found"
-//	@Failure		400	{object}	errorResponse	"Validation error"
-//	@Failure		404	{object}	errorResponse	"Data not found error"
-//	@Failure		500	{object}	errorResponse	"Internal server error"
+//	@Success		200	{object}	response.UserResponse	"Profile found"
+//	@Failure		400	{object}	response.ErrorResponse	"Validation error"
+//	@Failure		404	{object}	response.ErrorResponse	"Data not found error"
+//	@Failure		500	{object}	response.ErrorResponse	"Internal server error"
 //	@Router			/users/profile [get]
 func (handler *UserHandler) GetProfile(ctx *gin.Context) {
 	userIDI, exists := ctx.Get("user_id")
 	if !exists {
-		handleError(ctx, util.ErrForbidden)
+		response.HandleError(ctx, util.ErrForbidden)
 		return
 	}
 
 	userID, ok := userIDI.(uuid.UUID)
 	if !ok {
-		handleError(ctx, fmt.Errorf("invalid user id format"))
+		response.HandleError(ctx, fmt.Errorf("invalid user id format"))
 		return
 	}
 	user, err := handler.service.GetUser(ctx.Request.Context(), userID.String())
 	if err != nil {
-		handleError(ctx, err)
+		response.HandleError(ctx, err)
 		return
 	}
 
-	rsp := newUserResponse(user)
+	rsp := response.NewUserResponse(user)
 
-	handleSuccess(ctx, rsp)
+	response.HandleSuccess(ctx, rsp)
 }
 
 type getUsersRequest struct {
@@ -144,47 +146,47 @@ type getUsersRequest struct {
 //	@Tags			Users
 //	@Accept			json
 //	@Produce		json
-//	@Param			skip	query		int				true	"Number of items to skip"	example(0)
-//	@Param			limit	query		int				true	"Number of items to take"	example(5)	minimum(1)
-//	@Success		200		{object}	meta			"Users displayed"
-//	@Failure		400		{object}	errorResponse	"Validation error"
-//	@Failure		500		{object}	errorResponse	"Internal server error"
+//	@Param			skip	query		int						true	"Number of items to skip"	example(0)
+//	@Param			limit	query		int						true	"Number of items to take"	example(5)	minimum(1)
+//	@Success		200		{object}	response.Meta			"Users displayed"
+//	@Failure		400		{object}	response.ErrorResponse	"Validation error"
+//	@Failure		500		{object}	response.ErrorResponse	"Internal server error"
 //	@Router			/users [get]
 func (handler *UserHandler) GetUsers(ctx *gin.Context) {
 	var req getUsersRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
-		validationError(ctx, err)
+		response.ValidationError(ctx, err)
 		return
 	}
 
 	skip, err := strconv.ParseUint(req.Skip, 10, 64)
 	if err != nil {
-		handleError(ctx, err)
+		response.HandleError(ctx, err)
 		return
 	}
 
 	limit, err := strconv.ParseUint(req.Limit, 10, 64)
 	if err != nil {
-		handleError(ctx, err)
+		response.HandleError(ctx, err)
 		return
 	}
 
 	users, err := handler.service.GetUsers(ctx.Request.Context(), skip, limit)
 	if err != nil {
-		handleError(ctx, err)
+		response.HandleError(ctx, err)
 		return
 	}
 
-	userResponses := make([]userResponse, len(users))
+	userResponses := make([]response.UserResponse, len(users))
 	for i, user := range users {
-		userResponses[i] = newUserResponse(&user)
+		userResponses[i] = response.NewUserResponse(&user)
 	}
 
 	total := uint64(len(users))
-	meta := newMeta(total, limit, skip)
-	rsp := toMap(meta, userResponses, "users")
+	meta := response.NewMeta(total, limit, skip)
+	rsp := utilhandler.ToMap(meta, userResponses, "users")
 
-	handleSuccess(ctx, rsp)
+	response.HandleSuccess(ctx, rsp)
 }
 
 type updateUserRequest struct {
@@ -200,26 +202,26 @@ type updateUserRequest struct {
 //	@Tags			Users
 //	@Accept			json
 //	@Produce		json
-//	@Param			id		path		string				true	"User ID (UUID)"
-//	@Param			user	body		updateUserRequest	true	"Fields to update"
-//	@Success		200		{object}	userResponse		"User updated"
-//	@Failure		400		{object}	errorResponse		"Validation error"
-//	@Failure		401		{object}	errorResponse		"Unauthorized error"
-//	@Failure		403		{object}	errorResponse		"Forbidden error"
-//	@Failure		404		{object}	errorResponse		"Data not found error"
-//	@Failure		500		{object}	errorResponse		"Internal server error"
+//	@Param			id		path		string					true	"User ID (UUID)"
+//	@Param			user	body		updateUserRequest		true	"Fields to update"
+//	@Success		200		{object}	response.UserResponse	"User updated"
+//	@Failure		400		{object}	response.ErrorResponse	"Validation error"
+//	@Failure		401		{object}	response.ErrorResponse	"Unauthorized error"
+//	@Failure		403		{object}	response.ErrorResponse	"Forbidden error"
+//	@Failure		404		{object}	response.ErrorResponse	"Data not found error"
+//	@Failure		500		{object}	response.ErrorResponse	"Internal server error"
 //	@Router			/users/{id} [put]
 func (handler *UserHandler) UpdateUser(ctx *gin.Context) {
 	var req updateUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		validationError(ctx, err)
+		response.ValidationError(ctx, err)
 		return
 	}
 
 	id := ctx.Param("id")
 	uuid, err := uuid.Parse(id)
 	if err != nil {
-		validationError(ctx, err)
+		response.ValidationError(ctx, err)
 		return
 	}
 
@@ -235,13 +237,13 @@ func (handler *UserHandler) UpdateUser(ctx *gin.Context) {
 
 	updatedUser, err := handler.service.UpdateUser(ctx.Request.Context(), user)
 	if err != nil {
-		handleError(ctx, err)
+		response.HandleError(ctx, err)
 		return
 	}
 
-	rsp := newUserResponse(updatedUser)
+	rsp := response.NewUserResponse(updatedUser)
 
-	handleSuccess(ctx, rsp)
+	response.HandleSuccess(ctx, rsp)
 }
 
 type deleteUserRequest struct {
@@ -255,26 +257,26 @@ type deleteUserRequest struct {
 //	@Tags			Users
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string			true	"Post ID (UUID)"
-//	@Success		200	{object}	response		"User deleted"
-//	@Failure		400	{object}	errorResponse	"Validation error"
-//	@Failure		401	{object}	errorResponse	"Unauthorized error"
-//	@Failure		403	{object}	errorResponse	"Forbidden error"
-//	@Failure		404	{object}	errorResponse	"Data not found error"
-//	@Failure		500	{object}	errorResponse	"Internal server error"
+//	@Param			id	path		string					true	"Post ID (UUID)"
+//	@Success		200	{object}	response.Response		"User deleted"
+//	@Failure		400	{object}	response.ErrorResponse	"Validation error"
+//	@Failure		401	{object}	response.ErrorResponse	"Unauthorized error"
+//	@Failure		403	{object}	response.ErrorResponse	"Forbidden error"
+//	@Failure		404	{object}	response.ErrorResponse	"Data not found error"
+//	@Failure		500	{object}	response.ErrorResponse	"Internal server error"
 //	@Router			/users/{id} [delete]
 func (handler *UserHandler) DeleteUser(ctx *gin.Context) {
 	var req deleteUserRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
-		validationError(ctx, err)
+		response.ValidationError(ctx, err)
 		return
 	}
 
 	err := handler.service.DeleteUser(ctx.Request.Context(), req.ID)
 	if err != nil {
-		handleError(ctx, err)
+		response.HandleError(ctx, err)
 		return
 	}
 
-	handleSuccess(ctx, nil)
+	response.HandleSuccess(ctx, nil)
 }

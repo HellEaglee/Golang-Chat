@@ -1,10 +1,12 @@
-package httphandler
+package router
 
 import (
 	"log/slog"
 	"strings"
 
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/config"
+	"github.com/HellEaglee/Golang-Chat/internal/adapter/handler/http"
+	"github.com/HellEaglee/Golang-Chat/internal/adapter/handler/middleware"
 	"github.com/HellEaglee/Golang-Chat/internal/core/port"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -18,7 +20,7 @@ type Router struct {
 }
 
 func NewRouter(config *config.HTTP, tokenConfig *config.Token,
-	token port.TokenService, csrf port.CSRFService, authHandler AuthHandler, userHandler UserHandler,
+	token port.TokenService, csrf port.CSRFService, authHandler http.AuthHandler, userHandler http.UserHandler,
 ) (*Router, error) {
 	if config.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -44,7 +46,7 @@ func NewRouter(config *config.HTTP, tokenConfig *config.Token,
 			auth.GET("/csrf-token", authHandler.GetCSRFToken)
 		}
 		users := v1.Group("/users")
-		users.Use(authMiddleWare(token, csrf, tokenConfig))
+		users.Use(middleware.AuthMiddleWare(token, csrf, tokenConfig))
 		{
 			users.POST("/", userHandler.CreateUser)
 			users.GET("/profile", userHandler.GetProfile)

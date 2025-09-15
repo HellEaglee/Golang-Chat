@@ -1,4 +1,4 @@
-package httphandler
+package response
 
 import (
 	"errors"
@@ -40,43 +40,43 @@ var errorStatusMap = map[error]int{
 	util.ErrForbidden:                  http.StatusForbidden,
 }
 
-type response struct {
+type Response struct {
 	Success bool   `json:"success" example:"true"`
 	Message string `json:"message" example:"Success"`
 	Data    any    `json:"data,omitempty"`
 }
 
-func newResponse(success bool, message string, data any) response {
-	return response{
+func newResponse(success bool, message string, data any) Response {
+	return Response{
 		Success: success,
 		Message: message,
 		Data:    data,
 	}
 }
 
-type meta struct {
+type Meta struct {
 	Total uint64 `json:"total" example:"100"`
 	Limit uint64 `json:"limit" example:"10"`
 	Skip  uint64 `json:"skip" example:"0"`
 }
 
-func newMeta(total, limit, skip uint64) meta {
-	return meta{
+func NewMeta(total, limit, skip uint64) Meta {
+	return Meta{
 		Total: total,
 		Limit: limit,
 		Skip:  skip,
 	}
 }
 
-type authResponse struct {
+type AuthResponse struct {
 	Message string `json:"message"`
 }
 
-func newAuthResponse(message string) authResponse {
-	return authResponse{Message: message}
+func NewAuthResponse(message string) AuthResponse {
+	return AuthResponse{Message: message}
 }
 
-type userResponse struct {
+type UserResponse struct {
 	ID        uuid.UUID `json:"id" example:"3342a227-1f2d-4422-a718-435c6a115f62"`
 	Name      string    `json:"name" example:"John"`
 	Email     string    `json:"email" example:"john@gmail.com"`
@@ -84,16 +84,16 @@ type userResponse struct {
 	UpdatedAt time.Time `json:"updated_at" example:"1970-01-01T00:00:00Z"`
 }
 
-type csrfResponse struct {
+type CsrfResponse struct {
 	CSRFToken string `json:"csrf_token"`
 }
 
-func newCSRFResponse(message string) csrfResponse {
-	return csrfResponse{CSRFToken: message}
+func NewCSRFResponse(message string) CsrfResponse {
+	return CsrfResponse{CSRFToken: message}
 }
 
-func newUserResponse(user *domain.User) userResponse {
-	return userResponse{
+func NewUserResponse(user *domain.User) UserResponse {
+	return UserResponse{
 		ID:        user.ID,
 		Name:      user.Name,
 		Email:     user.Email,
@@ -102,13 +102,13 @@ func newUserResponse(user *domain.User) userResponse {
 	}
 }
 
-func validationError(ctx *gin.Context, err error) {
+func ValidationError(ctx *gin.Context, err error) {
 	errMsgs := parseError(err)
 	errRsp := newErrorResponse(errMsgs)
 	ctx.JSON(http.StatusBadRequest, errRsp)
 }
 
-func handleError(ctx *gin.Context, err error) {
+func HandleError(ctx *gin.Context, err error) {
 	statusCode, ok := errorStatusMap[err]
 	if !ok {
 		statusCode = http.StatusInternalServerError
@@ -119,7 +119,7 @@ func handleError(ctx *gin.Context, err error) {
 	ctx.JSON(statusCode, errRsp)
 }
 
-func handleAbort(ctx *gin.Context, err error) {
+func HandleAbort(ctx *gin.Context, err error) {
 	statusCode, ok := errorStatusMap[err]
 	if !ok {
 		statusCode = http.StatusInternalServerError
@@ -144,19 +144,19 @@ func parseError(err error) []string {
 	return errMsgs
 }
 
-type errorResponse struct {
+type ErrorResponse struct {
 	Success  bool     `json:"success" example:"false"`
 	Messages []string `json:"messages" example:"Error message 1, Error message 2"`
 }
 
-func newErrorResponse(errMsgs []string) errorResponse {
-	return errorResponse{
+func newErrorResponse(errMsgs []string) ErrorResponse {
+	return ErrorResponse{
 		Success:  false,
 		Messages: errMsgs,
 	}
 }
 
-func handleSuccess(ctx *gin.Context, data any) {
+func HandleSuccess(ctx *gin.Context, data any) {
 	rsp := newResponse(true, "Success", data)
 	ctx.JSON(http.StatusOK, rsp)
 }

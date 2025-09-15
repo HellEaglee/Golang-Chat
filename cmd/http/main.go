@@ -11,6 +11,7 @@ import (
 	jwt "github.com/HellEaglee/Golang-Chat/internal/adapter/auth/JWT"
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/config"
 	httphandler "github.com/HellEaglee/Golang-Chat/internal/adapter/handler/http"
+	"github.com/HellEaglee/Golang-Chat/internal/adapter/handler/router"
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/logger"
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/storage/postgres"
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/storage/postgres/repository"
@@ -73,7 +74,7 @@ func main() {
 	authService := service.NewAuthService(userRepo, token)
 	authHandler := httphandler.NewAuthHandler(config.Token, authService, csrf)
 
-	router, err := httphandler.NewRouter(
+	router, err := router.NewRouter(
 		config.HTTP,
 		config.Token,
 		token,

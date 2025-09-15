@@ -1,9 +1,11 @@
-package httphandler
+package http
 
 import (
 	"time"
 
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/config"
+	"github.com/HellEaglee/Golang-Chat/internal/adapter/handler/response"
+	utilhandler "github.com/HellEaglee/Golang-Chat/internal/adapter/handler/util"
 	"github.com/HellEaglee/Golang-Chat/internal/core/domain"
 	"github.com/HellEaglee/Golang-Chat/internal/core/port"
 	"github.com/HellEaglee/Golang-Chat/internal/core/util"
@@ -37,29 +39,29 @@ type authRequest struct {
 //	@Tags			Auth
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body		authRequest		true	"Login request body"
-//	@Success		200		{object}	authResponse	"Login successful"
-//	@Failure		400		{object}	errorResponse	"Validation error"
-//	@Failure		401		{object}	errorResponse	"Unauthorized error"
-//	@Failure		500		{object}	errorResponse	"Internal server error"
+//	@Param			request	body		authRequest				true	"Login request body"
+//	@Success		200		{object}	response.AuthResponse	"Login successful"
+//	@Failure		400		{object}	response.ErrorResponse	"Validation error"
+//	@Failure		401		{object}	response.ErrorResponse	"Unauthorized error"
+//	@Failure		500		{object}	response.ErrorResponse	"Internal server error"
 //	@Router			/auth/login [post]
 func (handler *AuthHandler) Login(ctx *gin.Context) {
 	var req authRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		validationError(ctx, err)
+		response.ValidationError(ctx, err)
 		return
 	}
 
 	accessToken, err := handler.service.Login(ctx, req.Email, req.Password)
 	if err != nil {
-		handleError(ctx, err)
+		response.HandleError(ctx, err)
 		return
 	}
 
-	setAuthCookies(ctx, accessToken, handler.duration)
-	rsp := newAuthResponse("Login successful")
+	utilhandler.SetAuthCookies(ctx, accessToken, handler.duration)
+	rsp := response.NewAuthResponse("Login successful")
 
-	handleSuccess(ctx, rsp)
+	response.HandleSuccess(ctx, rsp)
 }
 
 // Logout godoc
@@ -69,16 +71,16 @@ func (handler *AuthHandler) Login(ctx *gin.Context) {
 //	@Tags			Auth
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	authResponse	"Logout successful"
-//	@Failure		400	{object}	errorResponse	"Validation error"
-//	@Failure		401	{object}	errorResponse	"Unauthorized error"
-//	@Failure		500	{object}	errorResponse	"Internal server error"
+//	@Success		200	{object}	response.AuthResponse	"Logout successful"
+//	@Failure		400	{object}	response.ErrorResponse	"Validation error"
+//	@Failure		401	{object}	response.ErrorResponse	"Unauthorized error"
+//	@Failure		500	{object}	response.ErrorResponse	"Internal server error"
 //	@Router			/auth/logout [get]
 func (handler *AuthHandler) Logout(ctx *gin.Context) {
-	clearAuthCookies(ctx)
-	rsp := newAuthResponse("Logout successful")
+	utilhandler.ClearAuthCookies(ctx)
+	rsp := response.NewAuthResponse("Logout successful")
 
-	handleSuccess(ctx, rsp)
+	response.HandleSuccess(ctx, rsp)
 }
 
 // Register godoc
@@ -88,16 +90,16 @@ func (handler *AuthHandler) Logout(ctx *gin.Context) {
 //	@Tags			Auth
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body		authRequest		true	"Register request body"
-//	@Success		200		{object}	authResponse	"Register successful"
-//	@Failure		400		{object}	errorResponse	"Validation error"
-//	@Failure		401		{object}	errorResponse	"Unauthorized error"
-//	@Failure		500		{object}	errorResponse	"Internal server error"
+//	@Param			request	body		authRequest				true	"Register request body"
+//	@Success		200		{object}	response.AuthResponse	"Register successful"
+//	@Failure		400		{object}	response.ErrorResponse	"Validation error"
+//	@Failure		401		{object}	response.ErrorResponse	"Unauthorized error"
+//	@Failure		500		{object}	response.ErrorResponse	"Internal server error"
 //	@Router			/auth/register [post]
 func (handler *AuthHandler) Register(ctx *gin.Context) {
 	var req authRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		validationError(ctx, err)
+		response.ValidationError(ctx, err)
 		return
 	}
 
@@ -109,14 +111,14 @@ func (handler *AuthHandler) Register(ctx *gin.Context) {
 
 	accessToken, err := handler.service.Register(ctx, user)
 	if err != nil {
-		handleError(ctx, err)
+		response.HandleError(ctx, err)
 		return
 	}
 
-	setAuthCookies(ctx, accessToken, handler.duration)
-	rsp := newAuthResponse("Register successful")
+	utilhandler.SetAuthCookies(ctx, accessToken, handler.duration)
+	rsp := response.NewAuthResponse("Register successful")
 
-	handleSuccess(ctx, rsp)
+	response.HandleSuccess(ctx, rsp)
 }
 
 // CSRF godoc
@@ -126,15 +128,15 @@ func (handler *AuthHandler) Register(ctx *gin.Context) {
 //	@Tags			Auth
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	csrfResponse	"some token"
-//	@Failure		400	{object}	errorResponse	"Validation error"
-//	@Failure		401	{object}	errorResponse	"Unauthorized error"
-//	@Failure		500	{object}	errorResponse	"Internal server error"
+//	@Success		200	{object}	response.CsrfResponse	"some token"
+//	@Failure		400	{object}	response.ErrorResponse	"Validation error"
+//	@Failure		401	{object}	response.ErrorResponse	"Unauthorized error"
+//	@Failure		500	{object}	response.ErrorResponse	"Internal server error"
 //	@Router			/auth/csrf-token [get]
 func (handler *AuthHandler) GetCSRFToken(ctx *gin.Context) {
 	csrfToken, err := handler.csrf.GenerateToken()
 	if err != nil {
-		handleError(ctx, util.ErrInternal)
+		response.HandleError(ctx, util.ErrInternal)
 		return
 	}
 
@@ -147,6 +149,6 @@ func (handler *AuthHandler) GetCSRFToken(ctx *gin.Context) {
 		false,
 		true,
 	)
-	rsp := newCSRFResponse(csrfToken)
-	handleSuccess(ctx, rsp)
+	rsp := response.NewCSRFResponse(csrfToken)
+	response.HandleSuccess(ctx, rsp)
 }

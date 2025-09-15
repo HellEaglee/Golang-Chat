@@ -1,20 +1,22 @@
-package httphandler
+package middleware
 
 import (
 	"errors"
 	"time"
 
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/config"
+	"github.com/HellEaglee/Golang-Chat/internal/adapter/handler/response"
+	utilhandler "github.com/HellEaglee/Golang-Chat/internal/adapter/handler/util"
 	"github.com/HellEaglee/Golang-Chat/internal/core/port"
 	"github.com/HellEaglee/Golang-Chat/internal/core/util"
 	"github.com/gin-gonic/gin"
 )
 
-func authMiddleWare(s port.TokenService, csrf port.CSRFService, config *config.Token) gin.HandlerFunc {
+func AuthMiddleWare(s port.TokenService, csrf port.CSRFService, config *config.Token) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		duration, err := time.ParseDuration(config.Duration)
 		if err != nil {
-			handleAbort(ctx, err)
+			response.HandleAbort(ctx, err)
 			return
 		}
 		// if !verifyCSRFToken(ctx, csrf) {
@@ -25,7 +27,7 @@ func authMiddleWare(s port.TokenService, csrf port.CSRFService, config *config.T
 
 		accessToken, err := ctx.Cookie("access_token")
 		if err != nil {
-			handleAbort(ctx, util.ErrInvalidAccessToken)
+			response.HandleAbort(ctx, util.ErrInvalidAccessToken)
 			return
 		}
 
@@ -34,34 +36,34 @@ func authMiddleWare(s port.TokenService, csrf port.CSRFService, config *config.T
 			if errors.Is(err, util.ErrExpiredAccessToken) {
 				claims, err := s.ExtractClaimsFromToken(accessToken)
 				if err != nil {
-					handleAbort(ctx, err)
+					response.HandleAbort(ctx, err)
 					return
 				}
 				refreshToken, err := s.GetTokenBySessionID(ctx, claims.SessionID)
 				if err != nil {
-					handleAbort(ctx, err)
+					response.HandleAbort(ctx, err)
 					return
 				}
 				_, err = s.VerifyRefreshToken(ctx, refreshToken.Token)
 				if err != nil {
-					handleAbort(ctx, err)
+					response.HandleAbort(ctx, err)
 					return
 				}
 
 				newAccessToken, err := s.RefreshTokens(ctx, accessToken, refreshToken.Token)
 				if err != nil {
-					handleAbort(ctx, err)
+					response.HandleAbort(ctx, err)
 					return
 				}
-				setAuthCookies(ctx, newAccessToken, duration)
+				utilhandler.SetAuthCookies(ctx, newAccessToken, duration)
 
 				payload, err = s.VerifyToken(newAccessToken)
 				if err != nil {
-					handleAbort(ctx, err)
+					response.HandleAbort(ctx, err)
 					return
 				}
 			} else {
-				handleAbort(ctx, err)
+				response.HandleAbort(ctx, err)
 				return
 			}
 		}
@@ -71,7 +73,7 @@ func authMiddleWare(s port.TokenService, csrf port.CSRFService, config *config.T
 	}
 }
 
-func verifyCSRFToken(ctx *gin.Context, csrf port.CSRFService) bool {
+func VerifyCSRFToken(ctx *gin.Context, csrf port.CSRFService) bool {
 	csrfToken := ctx.GetHeader("X-CSRF-TOKEN")
 	if csrfToken == "" {
 		csrfToken = ctx.PostForm("csrf_token")

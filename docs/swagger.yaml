@@ -1,6 +1,6 @@
 basePath: /v1
 definitions:
-  httphandler.authRequest:
+  http.authRequest:
     properties:
       email:
         example: test@example.com
@@ -13,12 +13,7 @@ definitions:
     - email
     - password
     type: object
-  httphandler.authResponse:
-    properties:
-      message:
-        type: string
-    type: object
-  httphandler.createUserRequest:
+  http.createUserRequest:
     properties:
       email:
         example: john@gmail.com
@@ -31,47 +26,7 @@ definitions:
     - email
     - password
     type: object
-  httphandler.csrfResponse:
-    properties:
-      csrf_token:
-        type: string
-    type: object
-  httphandler.errorResponse:
-    properties:
-      messages:
-        example:
-        - Error message 1
-        - ' Error message 2'
-        items:
-          type: string
-        type: array
-      success:
-        example: false
-        type: boolean
-    type: object
-  httphandler.meta:
-    properties:
-      limit:
-        example: 10
-        type: integer
-      skip:
-        example: 0
-        type: integer
-      total:
-        example: 100
-        type: integer
-    type: object
-  httphandler.response:
-    properties:
-      data: {}
-      message:
-        example: Success
-        type: string
-      success:
-        example: true
-        type: boolean
-    type: object
-  httphandler.updateUserRequest:
+  http.updateUserRequest:
     properties:
       email:
         type: string
@@ -84,7 +39,52 @@ definitions:
     - email
     - name
     type: object
-  httphandler.userResponse:
+  response.AuthResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  response.CsrfResponse:
+    properties:
+      csrf_token:
+        type: string
+    type: object
+  response.ErrorResponse:
+    properties:
+      messages:
+        example:
+        - Error message 1
+        - ' Error message 2'
+        items:
+          type: string
+        type: array
+      success:
+        example: false
+        type: boolean
+    type: object
+  response.Meta:
+    properties:
+      limit:
+        example: 10
+        type: integer
+      skip:
+        example: 0
+        type: integer
+      total:
+        example: 100
+        type: integer
+    type: object
+  response.Response:
+    properties:
+      data: {}
+      message:
+        example: Success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  response.UserResponse:
     properties:
       created_at:
         example: "1970-01-01T00:00:00Z"
@@ -121,19 +121,19 @@ paths:
         "200":
           description: some token
           schema:
-            $ref: '#/definitions/httphandler.csrfResponse'
+            $ref: '#/definitions/response.CsrfResponse'
         "400":
           description: Validation error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "401":
           description: Unauthorized error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
       summary: CSRF
       tags:
       - Auth
@@ -149,26 +149,26 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/httphandler.authRequest'
+          $ref: '#/definitions/http.authRequest'
       produces:
       - application/json
       responses:
         "200":
           description: Login successful
           schema:
-            $ref: '#/definitions/httphandler.authResponse'
+            $ref: '#/definitions/response.AuthResponse'
         "400":
           description: Validation error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "401":
           description: Unauthorized error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
       summary: Login and get cookies
       tags:
       - Auth
@@ -184,19 +184,19 @@ paths:
         "200":
           description: Logout successful
           schema:
-            $ref: '#/definitions/httphandler.authResponse'
+            $ref: '#/definitions/response.AuthResponse'
         "400":
           description: Validation error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "401":
           description: Unauthorized error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
       summary: Logout
       tags:
       - Auth
@@ -212,26 +212,26 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/httphandler.authRequest'
+          $ref: '#/definitions/http.authRequest'
       produces:
       - application/json
       responses:
         "200":
           description: Register successful
           schema:
-            $ref: '#/definitions/httphandler.authResponse'
+            $ref: '#/definitions/response.AuthResponse'
         "400":
           description: Validation error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "401":
           description: Unauthorized error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
       summary: Register and get an access token
       tags:
       - Auth
@@ -260,15 +260,15 @@ paths:
         "200":
           description: Users displayed
           schema:
-            $ref: '#/definitions/httphandler.meta'
+            $ref: '#/definitions/response.Meta'
         "400":
           description: Validation error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
       summary: List users with pagination
       tags:
       - Users
@@ -282,34 +282,34 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/httphandler.createUserRequest'
+          $ref: '#/definitions/http.createUserRequest'
       produces:
       - application/json
       responses:
         "201":
           description: User created
           schema:
-            $ref: '#/definitions/httphandler.userResponse'
+            $ref: '#/definitions/response.UserResponse'
         "400":
           description: Validation error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "401":
           description: Unauthorized error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "404":
           description: Data not found error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "409":
           description: Data conflict error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
       summary: Create a new user
       tags:
       - Users
@@ -330,27 +330,27 @@ paths:
         "200":
           description: User deleted
           schema:
-            $ref: '#/definitions/httphandler.response'
+            $ref: '#/definitions/response.Response'
         "400":
           description: Validation error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "401":
           description: Unauthorized error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "403":
           description: Forbidden error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "404":
           description: Data not found error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
       summary: Delete a user
       tags:
       - Users
@@ -370,19 +370,19 @@ paths:
         "200":
           description: User found
           schema:
-            $ref: '#/definitions/httphandler.userResponse'
+            $ref: '#/definitions/response.UserResponse'
         "400":
           description: Validation error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "404":
           description: Data not found error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
       summary: Get a user by ID
       tags:
       - Users
@@ -401,34 +401,34 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/httphandler.updateUserRequest'
+          $ref: '#/definitions/http.updateUserRequest'
       produces:
       - application/json
       responses:
         "200":
           description: User updated
           schema:
-            $ref: '#/definitions/httphandler.userResponse'
+            $ref: '#/definitions/response.UserResponse'
         "400":
           description: Validation error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "401":
           description: Unauthorized error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "403":
           description: Forbidden error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "404":
           description: Data not found error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
       summary: Update an user
       tags:
       - Users
@@ -443,19 +443,19 @@ paths:
         "200":
           description: Profile found
           schema:
-            $ref: '#/definitions/httphandler.userResponse'
+            $ref: '#/definitions/response.UserResponse'
         "400":
           description: Validation error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "404":
           description: Data not found error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/httphandler.errorResponse'
+            $ref: '#/definitions/response.ErrorResponse'
       summary: Get profile data by ID
       tags:
       - Users
