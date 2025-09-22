@@ -1,29 +1,35 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import electron from "vite-plugin-electron";
 
-export default defineConfig({
-  plugins: [
-    react(),
-    electron([
-      {
-        // Main-Process entry file of the Electron App.
-        entry: "electron/main.ts",
-      },
-      {
-        // Preload-Scripts entry file (optional)
-        entry: "electron/preload.ts",
-        onstart(options) {
-          // Notify the Renderer-Process to reload the page when the Preload-Scripts build is complete,
-          // instead of restarting the entire Electron App.
-          options.reload();
+export default defineConfig(({ mode }) => {
+  // 👇 Load .env files based on mode
+  const env = loadEnv(mode, process.cwd(), "");
+
+  return {
+    plugins: [
+      react(),
+      electron([
+        {
+          entry: "electron/main.ts",
+          vite: {
+            define: {
+              "process.env.NODE_ENV": JSON.stringify(env.NODE_ENV),
+            },
+          },
         },
+        {
+          entry: "electron/preload.ts",
+          onstart(options) {
+            options.reload();
+          },
+        },
+      ]),
+    ],
+    build: {
+      rollupOptions: {
+        external: ["electron"],
       },
-    ]),
-  ],
-  build: {
-    rollupOptions: {
-      external: ["electron"],
     },
-  },
+  };
 });
