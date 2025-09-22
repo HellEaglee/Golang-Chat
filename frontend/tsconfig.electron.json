@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist-electron",
+    "module": "commonjs",
+    "target": "es2020",
+    "lib": ["es2020", "dom"],           // 👈 Add "dom" for HTMLElement, MessagePort, etc.
+    "types": ["node"],
+    "esModuleInterop": true,            // 👈 Fix "import path from 'path'"
+    "skipLibCheck": true,               // 👈 Skip type checking of .d.ts files (optional but helpful)
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["electron/**/*.ts"],
+  "exclude": ["node_modules"]
+}
