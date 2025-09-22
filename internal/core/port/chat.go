@@ -13,6 +13,7 @@ type ChatRepository interface {
 	GetChatsByUserID(ctx context.Context, id string) ([]domain.Chat, error)
 	GetChats(ctx context.Context, skip uint64, limit uint64) ([]domain.Chat, error)
 	UpdateChat(ctx context.Context, chat *domain.Chat) (*domain.Chat, error)
+	UpdateLastMessage(ctx context.Context, chatID, message string) (*domain.Chat, error)
 	DeleteChat(ctx context.Context, id string) error
 	// ChatParticipants
 	CreateChatParticipant(ctx context.Context, chatParticipant *domain.ChatParticipant) (*domain.ChatParticipant, error)
@@ -29,6 +30,7 @@ type ChatService interface {
 	GetChatsByUserID(ctx context.Context, id string) ([]domain.Chat, error)
 	GetChats(ctx context.Context, skip uint64, limit uint64) ([]domain.Chat, error)
 	UpdateChat(ctx context.Context, chat *domain.Chat) (*domain.Chat, error)
+	UpdateLastMessage(ctx context.Context, chatID, message string) (*domain.Chat, error)
 	DeleteChat(ctx context.Context, id string) error
 	// ChatParticipants
 	CreateChatParticipant(ctx context.Context, chatParticipant *domain.ChatParticipant) (*domain.ChatParticipant, error)

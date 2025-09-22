@@ -7,6 +7,7 @@ import (
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/config"
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/handler/http"
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/handler/middleware"
+	"github.com/HellEaglee/Golang-Chat/internal/adapter/handler/ws"
 	"github.com/HellEaglee/Golang-Chat/internal/core/port"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -20,7 +21,7 @@ type Router struct {
 }
 
 func NewRouter(config *config.HTTP, tokenConfig *config.Token,
-	token port.TokenService, csrf port.CSRFService, authHandler http.AuthHandler, userHandler http.UserHandler,
+	token port.TokenService, csrf port.CSRFService, authHandler http.AuthHandler, userHandler http.UserHandler, wsHandler *ws.WS,
 ) (*Router, error) {
 	if config.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -35,9 +36,10 @@ func NewRouter(config *config.HTTP, tokenConfig *config.Token,
 	router := gin.New()
 	router.Use(sloggin.New(slog.Default()), gin.Recovery(), cors.New(ginConfig))
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
+	router.GET("/ws/hub", middleware.AuthMiddleWare(token, csrf, tokenConfig), gin.WrapH(wsHandler))
 	v1 := router.Group("/v1")
 	{
+
 		auth := v1.Group("/auth")
 		{
 			auth.POST("/login", authHandler.Login)

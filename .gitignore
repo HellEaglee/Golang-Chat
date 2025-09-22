@@ -19,3 +19,5 @@ log/
 *.test
 *.out
 coverage*
+
+index.html

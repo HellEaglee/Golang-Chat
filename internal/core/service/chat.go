@@ -36,6 +36,10 @@ func (s *ChatService) UpdateChat(ctx context.Context, chat *domain.Chat) (*domai
 	return s.repo.UpdateChat(ctx, chat)
 }
 
+func (s *ChatService) UpdateLastMessage(ctx context.Context, chatID, message string) (*domain.Chat, error) {
+	return s.repo.UpdateLastMessage(ctx, chatID, message)
+}
+
 func (s *ChatService) DeleteChat(ctx context.Context, id string) error {
 	return s.repo.DeleteChat(ctx, id)
 }

@@ -54,6 +54,18 @@ func newResponse(success bool, message string, data any) Response {
 	}
 }
 
+type ErrorResponse struct {
+	Success  bool     `json:"success" example:"false"`
+	Messages []string `json:"messages" example:"Error message 1, Error message 2"`
+}
+
+func newErrorResponse(errMsgs []string) ErrorResponse {
+	return ErrorResponse{
+		Success:  false,
+		Messages: errMsgs,
+	}
+}
+
 type Meta struct {
 	Total uint64 `json:"total" example:"100"`
 	Limit uint64 `json:"limit" example:"10"`
@@ -142,18 +154,6 @@ func parseError(err error) []string {
 	}
 
 	return errMsgs
-}
-
-type ErrorResponse struct {
-	Success  bool     `json:"success" example:"false"`
-	Messages []string `json:"messages" example:"Error message 1, Error message 2"`
-}
-
-func newErrorResponse(errMsgs []string) ErrorResponse {
-	return ErrorResponse{
-		Success:  false,
-		Messages: errMsgs,
-	}
 }
 
 func HandleSuccess(ctx *gin.Context, data any) {

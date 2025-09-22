@@ -58,6 +58,16 @@ func (r *ChatRepository) UpdateChat(ctx context.Context, chat *domain.Chat) (*do
 	return &updatedChat, nil
 }
 
+func (r *ChatRepository) UpdateLastMessage(ctx context.Context, chatID, message string) (*domain.Chat, error) {
+	var updatedChat domain.Chat
+	query := `UPDATE chats SET last_message = $2, last_message_at = NOW() WHERE id = $1 and deleted_at is NULL RETURNING *`
+
+	if err := r.db.WithContext(ctx).Raw(query, chatID, message).Scan(&updatedChat).Error; err != nil {
+		return nil, err
+	}
+	return &updatedChat, nil
+}
+
 func (r *ChatRepository) DeleteChat(ctx context.Context, id string) error {
 	if err := r.db.WithContext(ctx).Where("id = ?", id).Delete(&domain.Chat{}).Error; err != nil {
 		return err

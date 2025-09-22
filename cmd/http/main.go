@@ -12,6 +12,7 @@ import (
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/config"
 	httphandler "github.com/HellEaglee/Golang-Chat/internal/adapter/handler/http"
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/handler/router"
+	"github.com/HellEaglee/Golang-Chat/internal/adapter/handler/ws"
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/logger"
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/storage/postgres"
 	"github.com/HellEaglee/Golang-Chat/internal/adapter/storage/postgres/repository"
@@ -74,6 +75,13 @@ func main() {
 	authService := service.NewAuthService(userRepo, token)
 	authHandler := httphandler.NewAuthHandler(config.Token, authService, csrf)
 
+	chatRepo := repository.NewChatRepository(db)
+	chatService := service.NewChatService(chatRepo)
+	messageRepo := repository.NewMessageRepository(db)
+	messageService := service.NewMessageService(messageRepo)
+
+	wsHandler := ws.NewWS(chatService, messageService)
+
 	router, err := router.NewRouter(
 		config.HTTP,
 		config.Token,
@@ -81,6 +89,7 @@ func main() {
 		csrf,
 		*authHandler,
 		*userHandler,
+		wsHandler,
 	)
 	if err != nil {
 		slog.Error("Error initializing router", "error", err)
