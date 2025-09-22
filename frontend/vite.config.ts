@@ -3,7 +3,6 @@ import react from "@vitejs/plugin-react-swc";
 import electron from "vite-plugin-electron";
 
 export default defineConfig(({ mode }) => {
-  // 👇 Load .env files based on mode
   const env = loadEnv(mode, process.cwd(), "");
 
   return {
